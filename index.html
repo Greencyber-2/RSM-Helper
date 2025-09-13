@@ -28,19 +28,19 @@
         
         .header {
             text-align: center;
-            padding: 15px 0;
+            padding: 20px 0;
             background-color: #0088cc;
             color: white;
-            border-radius: 10px 10px 0 0;
+            border-radius: 10px;
             margin-bottom: 20px;
         }
         
         .card {
-            background: white;
+            background-color: white;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
         .btn {
@@ -53,7 +53,7 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            margin: 10px 0;
+            margin-top: 10px;
             text-align: center;
         }
         
@@ -87,22 +87,8 @@
             font-size: 16px;
         }
         
-        .error {
-            color: #dc3545;
-            text-align: center;
-            padding: 10px;
-            background-color: #f8d7da;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-        
-        .success {
-            color: #155724;
-            text-align: center;
-            padding: 10px;
-            background-color: #d4edda;
-            border-radius: 5px;
-            margin-bottom: 15px;
+        .hidden {
+            display: none;
         }
         
         .loading {
@@ -110,8 +96,28 @@
             padding: 20px;
         }
         
-        .hidden {
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .page {
             display: none;
+        }
+        
+        .active {
+            display: block;
         }
         
         .nav {
@@ -120,229 +126,208 @@
             margin-bottom: 20px;
         }
         
-        .result-card {
-            background-color: #f8f9fa;
+        .admin-info {
+            background-color: #e3f2fd;
             padding: 15px;
             border-radius: 5px;
-            margin-top: 15px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- صفحه اصلی - انتخاب پنل -->
-        <div id="main-page" class="hidden">
+        <!-- صفحه لودینگ -->
+        <div id="loading" class="loading">
+            <p>در حال بارگذاری...</p>
+        </div>
+        
+        <!-- صفحه خطا برای مرورگر معمولی -->
+        <div id="browser-error" class="page card error">
+            <h2>خطا</h2>
+            <p>این مینی‌اپ فقط داخل تلگرام کار می‌کند.</p>
+        </div>
+        
+        <!-- پنل ادمین -->
+        <div id="admin-panel" class="page">
             <div class="header">
-                <h1>RSM Helper</h1>
+                <h1>پنل مدیریت</h1>
             </div>
             
-            <div id="user-panel" class="hidden">
-                <div class="card">
-                    <h2>پنل کاربری</h2>
-                    <p id="user-welcome">خوش آمدید!</p>
-                    <button id="query-btn" class="btn">استعلام درخواست</button>
-                </div>
-            </div>
-            
-            <div id="admin-panel" class="hidden">
-                <div class="card">
-                    <h2>پنل مدیریت</h2>
-                    <p id="admin-welcome">خوش آمدید!</p>
-                    <button id="add-admin-btn" class="btn">افزودن ادمین</button>
-                    <button id="decide-request-btn" class="btn">تایید/رد درخواست</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- صفحه استعلام کاربر -->
-        <div id="query-page" class="hidden">
-            <div class="nav">
-                <button id="back-from-query" class="btn btn-secondary">بازگشت</button>
+            <div id="admin-info" class="admin-info">
+                <!-- اطلاعات ادمین اینجا نمایش داده می‌شود -->
             </div>
             
             <div class="card">
-                <h2>استعلام درخواست</h2>
-                
-                <div class="form-group">
-                    <label for="nick">نام گیم:</label>
-                    <input type="text" id="nick" placeholder="نام گیم خود را وارد کنید">
-                </div>
-                
-                <div class="form-group">
-                    <label for="referral">رفرال:</label>
-                    <input type="text" id="referral" placeholder="کد رفرال خود را وارد کنید">
-                </div>
-                
-                <button id="check-request-btn" class="btn">بررسی</button>
-                
-                <div id="query-result" class="result-card hidden"></div>
-            </div>
-        </div>
-        
-        <!-- صفحه اعتراض کاربر -->
-        <div id="appeal-page" class="hidden">
-            <div class="nav">
-                <button id="back-from-appeal" class="btn btn-secondary">بازگشت</button>
+                <button id="btn-add-admin" class="btn">افزودن ادمین</button>
+                <button id="btn-decide-request" class="btn">تایید/رد درخواست</button>
             </div>
             
-            <div class="card">
-                <h2>ثبت اعتراض</h2>
-                <p>لطفاً دلیل اعتراض خود را به طور کامل شرح دهید:</p>
-                
-                <div class="form-group">
-                    <textarea id="appeal-message" rows="5" placeholder="متن اعتراض..."></textarea>
-                </div>
-                
-                <button id="submit-appeal-btn" class="btn">ارسال اعتراض</button>
-            </div>
-        </div>
-        
-        <!-- صفحه افزودن ادمین -->
-        <div id="add-admin-page" class="hidden">
-            <div class="nav">
-                <button id="back-from-add-admin" class="btn btn-secondary">بازگشت</button>
-            </div>
-            
-            <div class="card">
+            <!-- فرم افزودن ادمین -->
+            <div id="form-add-admin" class="page card hidden">
                 <h2>افزودن ادمین جدید</h2>
-                
                 <div class="form-group">
                     <label for="admin-nick">نام گیم:</label>
-                    <input type="text" id="admin-nick" placeholder="نام گیم ادمین">
+                    <input type="text" id="admin-nick" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="admin-referral">رفرال:</label>
-                    <input type="text" id="admin-referral" placeholder="کد رفرال ادمین">
+                    <input type="text" id="admin-referral" required>
                 </div>
-                
                 <div class="form-group">
-                    <label for="admin-tid">آیدی عددی تلگرام:</label>
-                    <input type="number" id="admin-tid" placeholder="آیدی عددی تلگرام">
+                    <label for="admin-telegram-id">آیدی عددی تلگرام:</label>
+                    <input type="number" id="admin-telegram-id" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="admin-rank">رنک:</label>
-                    <select id="admin-rank">
-                        <option value="">-- انتخاب رنک --</option>
-                        <option value="Support Warden">Support Warden</option>
-                        <option value="Support Director">Support Director</option>
-                        <option value="Support Advisor">Support Advisor</option>
+                    <select id="admin-rank" required>
+                        <option value="">انتخاب کنید</option>
                         <option value="Support Manager">Support Manager</option>
-                        <option value="Developer">Developer</option>
+                        <option value="Support Advisor">Support Advisor</option>
+                        <option value="Support Director">Support Director</option>
+                        <option value="Support Warden">Support Warden</option>
                     </select>
                 </div>
-                
-                <button id="submit-admin-btn" class="btn">ثبت ادمین</button>
-            </div>
-        </div>
-        
-        <!-- صفحه تایید/رد درخواست -->
-        <div id="decide-request-page" class="hidden">
-            <div class="nav">
-                <button id="back-from-decide" class="btn btn-secondary">بازگشت</button>
+                <button id="btn-submit-admin" class="btn">ثبت ادمین</button>
+                <button id="btn-back-from-add-admin" class="btn btn-secondary">بازگشت</button>
             </div>
             
-            <div class="card">
+            <!-- فرم تایید/رد درخواست -->
+            <div id="form-decide-request" class="page card hidden">
                 <h2>تایید/رد درخواست</h2>
-                
                 <div class="form-group">
                     <label for="request-nick">نام گیم:</label>
-                    <input type="text" id="request-nick" placeholder="نام گیم متقاضی">
+                    <input type="text" id="request-nick" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="request-referral">رفرال:</label>
-                    <input type="text" id="request-referral" placeholder="کد رفرال متقاضی">
+                    <input type="text" id="request-referral" required>
                 </div>
-                
                 <div class="form-group">
-                    <label for="request-tid">آیدی عددی تلگرام:</label>
-                    <input type="number" id="request-tid" placeholder="آیدی عددی تلگرام متقاضی">
+                    <label for="request-telegram-id">آیدی عددی تلگرام:</label>
+                    <input type="number" id="request-telegram-id" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="request-status">نوع درخواست:</label>
-                    <select id="request-status">
-                        <option value="">-- انتخاب نوع --</option>
+                    <select id="request-status" required>
+                        <option value="">انتخاب کنید</option>
                         <option value="approved">تایید</option>
                         <option value="rejected">رد</option>
                     </select>
                 </div>
-                
-                <div id="reject-reason-container" class="form-group hidden">
-                    <label for="reject-reason">دلیل رد:</label>
-                    <textarea id="reject-reason" rows="3" placeholder="دلیل رد درخواست"></textarea>
+                <div id="reason-field" class="form-group hidden">
+                    <label for="request-reason">دلیل رد:</label>
+                    <textarea id="request-reason" required></textarea>
                 </div>
-                
-                <div id="tester-container" class="form-group hidden">
-                    <label for="tester">مسئول تست:</label>
-                    <select id="tester">
-                        <option value="">-- انتخاب مسئول تست --</option>
+                <div id="tester-field" class="form-group hidden">
+                    <label for="request-tester">مسئول تست:</label>
+                    <select id="request-tester">
+                        <option value="">انتخاب کنید</option>
                     </select>
                 </div>
-                
-                <button id="submit-decision-btn" class="btn">ثبت تصمیم</button>
+                <button id="btn-submit-decision" class="btn">ثبت تصمیم</button>
+                <button id="btn-back-from-decide" class="btn btn-secondary">بازگشت</button>
             </div>
         </div>
         
-        <!-- صفحه خطا -->
-        <div id="error-page" class="hidden">
+        <!-- پنل کاربری -->
+        <div id="user-panel" class="page">
+            <div class="header">
+                <h1>سامانه استعلام درخواست</h1>
+            </div>
+            
             <div class="card">
-                <h2 class="error">خطا</h2>
-                <p id="error-message"></p>
+                <p>کاربر گرامی، برای استعلام درخواست خود از دکمه زیر استفاده کنید.</p>
+                <button id="btn-query-request" class="btn">استعلام درخواست</button>
             </div>
-        </div>
-        
-        <!-- صفحه لودینگ -->
-        <div id="loading" class="loading">
-            <p>در حال بارگذاری...</p>
+            
+            <!-- فرم استعلام -->
+            <div id="form-query" class="page card hidden">
+                <h2>استعلام درخواست</h2>
+                <div class="form-group">
+                    <label for="query-nick">نام گیم:</label>
+                    <input type="text" id="query-nick" required>
+                </div>
+                <div class="form-group">
+                    <label for="query-referral">رفرال:</label>
+                    <input type="text" id="query-referral" required>
+                </div>
+                <button id="btn-submit-query" class="btn">بررسی</button>
+                <button id="btn-back-from-query" class="btn btn-secondary">بازگشت</button>
+            </div>
+            
+            <!-- نتیجه استعلام -->
+            <div id="query-result" class="page card hidden">
+                <div id="result-content">
+                    <!-- نتیجه اینجا نمایش داده می‌شود -->
+                </div>
+                <div id="appeal-section" class="hidden">
+                    <div class="form-group">
+                        <label for="appeal-message">متن اعتراض:</label>
+                        <textarea id="appeal-message" required></textarea>
+                    </div>
+                    <button id="btn-submit-appeal" class="btn">ارسال اعتراض</button>
+                </div>
+                <button id="btn-back-from-result" class="btn btn-secondary">بازگشت</button>
+            </div>
+            
+            <!-- صفحه وضعیت تایید شده -->
+            <div id="approved-info" class="page card hidden">
+                <div id="approved-content">
+                    <!-- اطلاعات تایید اینجا نمایش داده می‌شود -->
+                </div>
+                <button id="btn-ready" class="btn">آماده‌ام</button>
+                <button id="btn-back-from-approved" class="btn btn-secondary">بازگشت</button>
+            </div>
+            
+            <!-- صفحه نکات مهم -->
+            <div id="important-notes" class="page card hidden">
+                <h2>نکات مهم</h2>
+                <div>
+                    <p>1- اگر شما جزء افراد اسپشیال (ویژه) هستید پیوی مسئول تست که رفتید شرایط رو براتون توضیح میده و در صورتی که تایید کردید یه تایم مشخص میکنه که توی اون تایم میای سرور و تیم اسپیک و ازتون تست میگیره</p>
+                    <p>2- در صورتی که در زمان کوتاهی بر فرض مثال کمتر از یک ماه استعفا بدید بلک لیست استف بیشتری نسبت به حالت عادی دریافت میکنید و تا وقتی بلک لیست استف باشید نمی‌تونید ( لیدر - ساب لیدر - کریتور ) شوید + امکان پانیش نیز میباشد پس در صورتی که تایم ندارید یا بنا بر دلایلی طی روز ها یا ماه های آینده به مشکل خوردید و نتوانستید فعالیت کنید، همین الان میتوانید انصراف بدید بدون هیچ برخورد و پانیشمنتی! اما اگر عضو تیم ساپورتری بشید و در تایم کوتاهی (کمتر از یک ماه) به هر دلیلی از تیم ساپورتری خارج بشید برخورد در پی دارد!!!</p>
+                    <p>3- درصورتی که تست رو قبول شدید نمونه احراز پیوی شما ارسال میشه و مطابق اون پیوی سرور منیجر @to_031 احراز هویت میکنید در ضمن ( احراز هویت های شما رو فقط و فقط سرور منیجر دارن و هیچکس دیگه ای احراز شما رو نمی‌بینه )</p>
+                    <p>4- تست از تمامی قوانین سرور + سی ام دی های سرور هست (بجز نظام وظیفه)</p>
+                    <p>مسئول تست شما: <span id="tester-name"></span></p>
+                </div>
+                <button id="btn-back-from-notes" class="btn btn-secondary">بازگشت</button>
+            </div>
         </div>
     </div>
 
     <script>
         // متغیرهای جهانی
-        let currentUser = null;
+        let tg = null;
+        let userData = null;
         let isAdmin = false;
-        let adminMeta = null;
         const API_BASE = 'https://rsm-helper.hupadr.workers.dev';
         
-        // المنت های اصلی
-        const mainPage = document.getElementById('main-page');
-        const userPanel = document.getElementById('user-panel');
-        const adminPanel = document.getElementById('admin-panel');
-        const queryPage = document.getElementById('query-page');
-        const appealPage = document.getElementById('appeal-page');
-        const addAdminPage = document.getElementById('add-admin-page');
-        const decideRequestPage = document.getElementById('decide-request-page');
-        const errorPage = document.getElementById('error-page');
-        const loadingElement = document.getElementById('loading');
-        const errorMessageElement = document.getElementById('error-message');
+        // صفحات
+        const pages = {
+            loading: document.getElementById('loading'),
+            browserError: document.getElementById('browser-error'),
+            adminPanel: document.getElementById('admin-panel'),
+            userPanel: document.getElementById('user-panel'),
+            formAddAdmin: document.getElementById('form-add-admin'),
+            formDecideRequest: document.getElementById('form-decide-request'),
+            formQuery: document.getElementById('form-query'),
+            queryResult: document.getElementById('query-result'),
+            approvedInfo: document.getElementById('approved-info'),
+            importantNotes: document.getElementById('important-notes')
+        };
         
-        // نمایش خطا
-        function showError(message) {
-            errorMessageElement.textContent = message;
-            hideAllPages();
-            errorPage.classList.remove('hidden');
-        }
-        
-        // پنهان کردن همه صفحات
-        function hideAllPages() {
-            mainPage.classList.add('hidden');
-            userPanel.classList.add('hidden');
-            adminPanel.classList.add('hidden');
-            queryPage.classList.add('hidden');
-            appealPage.classList.add('hidden');
-            addAdminPage.classList.add('hidden');
-            decideRequestPage.classList.add('hidden');
-            errorPage.classList.add('hidden');
-            loadingElement.classList.add('hidden');
-        }
-        
-        // نمایش صفحه لودینگ
-        function showLoading() {
-            hideAllPages();
-            loadingElement.classList.remove('hidden');
+        // نمایش صفحه مورد نظر و مخفی کردن بقیه
+        function showPage(page) {
+            Object.values(pages).forEach(p => {
+                if (p && p.classList) {
+                    p.classList.add('hidden');
+                    p.classList.remove('active');
+                }
+            });
+            
+            if (page && page.classList) {
+                page.classList.remove('hidden');
+                page.classList.add('active');
+            }
         }
         
         // بررسی اینکه آیا در محیط تلگرام هستیم یا نه
@@ -350,411 +335,368 @@
             return window.Telegram && window.Telegram.WebApp;
         }
         
-        // دریافت initData از تلگرام
-        function getInitData() {
-            if (isTelegramWebApp()) {
-                return window.Telegram.WebApp.initData;
-            }
-            return null;
-        }
-        
-        // بررسی صحت initData با سرور
+        // بررسی initData و دریافت اطلاعات کاربر
         async function verifyInitData() {
-            const initData = getInitData();
-            if (!initData) {
-                throw new Error('داده‌های اولیه یافت نشد');
-            }
-            
             try {
+                const initData = tg.initData;
                 const response = await fetch(`${API_BASE}/api/verify-init`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ initData }),
+                    body: JSON.stringify({ initData })
                 });
                 
                 const data = await response.json();
                 
-                if (!response.ok) {
-                    throw new Error(data.error || 'خطا در تأیید هویت');
-                }
-                
-                return data;
-            } catch (error) {
-                console.error('Error verifying init data:', error);
-                throw new Error('خطا در ارتباط با سرور');
-            }
-        }
-        
-        // راه‌اندازی اولیه برنامه
-        async function initializeApp() {
-            // بررسی محیط اجرا
-            if (!isTelegramWebApp()) {
-                showError('این مینی‌اپ فقط داخل تلگرام کار می‌کند.');
-                return;
-            }
-            
-            showLoading();
-            
-            try {
-                // تأیید initData
-                const verificationResult = await verifyInitData();
-                currentUser = verificationResult.user;
-                isAdmin = verificationResult.is_admin;
-                adminMeta = verificationResult.admin_meta;
-                
-                // نمایش پنل مناسب
-                hideAllPages();
-                mainPage.classList.remove('hidden');
-                
-                if (isAdmin) {
-                    document.getElementById('admin-welcome').textContent = 
-                        `خوش آمدید ${adminMeta.nick} (${adminMeta.rank})! رفرال: ${adminMeta.referral}`;
-                    adminPanel.classList.remove('hidden');
+                if (data.success) {
+                    userData = data.user;
+                    isAdmin = data.is_admin;
                     
-                    // مخفی کردن دکمه افزودن ادمین اگر دسترسی نداشته باشد
-                    if (adminMeta.rank === 'Support Warden') {
-                        document.getElementById('add-admin-btn').classList.add('hidden');
+                    if (isAdmin) {
+                        document.getElementById('admin-info').innerHTML = `
+                            <h3>خوش آمدید ${userData.nick}</h3>
+                            <p>رنک شما: ${userData.rank}</p>
+                            <p>رفرال شما: ${userData.referral}</p>
+                        `;
+                        showPage(pages.adminPanel);
+                    } else {
+                        showPage(pages.userPanel);
                     }
                 } else {
-                    document.getElementById('user-welcome').textContent = 
-                        `خوش آمدید ${currentUser.first_name || 'کاربر'}!`;
-                    userPanel.classList.remove('hidden');
+                    showError('خطا در احراز هویت');
                 }
             } catch (error) {
-                showError(error.message);
+                showError('خطا در ارتباط با سرور');
             }
         }
         
-        // مدیریت ناوبری بین صفحات
-        function setupNavigation() {
-            // رفتن به صفحه استعلام
-            document.getElementById('query-btn').addEventListener('click', () => {
-                hideAllPages();
-                queryPage.classList.remove('hidden');
+        // نمایش خطا
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            document.querySelector('.container').prepend(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+        
+        // نمایش موفقیت
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.textContent = message;
+            document.querySelector('.container').prepend(successDiv);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 5000);
+        }
+        
+        // مدیریت رویدادها
+        function setupEventListeners() {
+            // دکمه‌های پنل ادمین
+            document.getElementById('btn-add-admin').addEventListener('click', () => {
+                showPage(pages.formAddAdmin);
             });
             
-            // بازگشت از صفحه استعلام
-            document.getElementById('back-from-query').addEventListener('click', () => {
-                hideAllPages();
-                mainPage.classList.remove('hidden');
-                if (isAdmin) {
-                    adminPanel.classList.remove('hidden');
-                } else {
-                    userPanel.classList.remove('hidden');
-                }
-            });
-            
-            // رفتن به صفحه افزودن ادمین
-            document.getElementById('add-admin-btn').addEventListener('click', () => {
-                hideAllPages();
-                addAdminPage.classList.remove('hidden');
-            });
-            
-            // بازگشت از صفحه افزودن ادمین
-            document.getElementById('back-from-add-admin').addEventListener('click', () => {
-                hideAllPages();
-                mainPage.classList.remove('hidden');
-                adminPanel.classList.remove('hidden');
-            });
-            
-            // رفتن به صفحه تایید/رد درخواست
-            document.getElementById('decide-request-btn').addEventListener('click', () => {
-                hideAllPages();
-                decideRequestPage.classList.remove('hidden');
+            document.getElementById('btn-decide-request').addEventListener('click', () => {
                 loadAdminsForTester();
+                showPage(pages.formDecideRequest);
             });
             
-            // بازگشت از صفحه تایید/رد درخواست
-            document.getElementById('back-from-decide').addEventListener('click', () => {
-                hideAllPages();
-                mainPage.classList.remove('hidden');
-                adminPanel.classList.remove('hidden');
+            document.getElementById('btn-back-from-add-admin').addEventListener('click', () => {
+                showPage(pages.adminPanel);
             });
             
-            // بازگشت از صفحه اعتراض
-            document.getElementById('back-from-appeal').addEventListener('click', () => {
-                hideAllPages();
-                queryPage.classList.remove('hidden');
+            document.getElementById('btn-back-from-decide').addEventListener('click', () => {
+                showPage(pages.adminPanel);
             });
             
-            // تغییر وضعیت درخواست (تایید/رد)
+            // تغییر وضعیت در فرم تصمیم‌گیری
             document.getElementById('request-status').addEventListener('change', (e) => {
                 const status = e.target.value;
-                const rejectReasonContainer = document.getElementById('reject-reason-container');
-                const testerContainer = document.getElementById('tester-container');
+                document.getElementById('reason-field').classList.toggle('hidden', status !== 'rejected');
+                document.getElementById('tester-field').classList.toggle('hidden', status !== 'approved');
+            });
+            
+            // ثبت ادمین جدید
+            document.getElementById('btn-submit-admin').addEventListener('click', async () => {
+                const nick = document.getElementById('admin-nick').value;
+                const referral = document.getElementById('admin-referral').value;
+                const telegramId = document.getElementById('admin-telegram-id').value;
+                const rank = document.getElementById('admin-rank').value;
                 
-                if (status === 'rejected') {
-                    rejectReasonContainer.classList.remove('hidden');
-                    testerContainer.classList.add('hidden');
-                } else if (status === 'approved') {
-                    rejectReasonContainer.classList.add('hidden');
-                    testerContainer.classList.remove('hidden');
-                } else {
-                    rejectReasonContainer.classList.add('hidden');
-                    testerContainer.classList.add('hidden');
+                if (!nick || !referral || !telegramId || !rank) {
+                    showError('لطفا تمام فیلدها را پر کنید');
+                    return;
                 }
+                
+                try {
+                    const response = await fetch(`${API_BASE}/api/add-admin`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            initData: tg.initData,
+                            nick,
+                            referral,
+                            telegram_id: telegramId,
+                            rank
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showSuccess('ادمین با موفقیت اضافه شد');
+                        document.getElementById('admin-nick').value = '';
+                        document.getElementById('admin-referral').value = '';
+                        document.getElementById('admin-telegram-id').value = '';
+                        document.getElementById('admin-rank').value = '';
+                        showPage(pages.adminPanel);
+                    } else {
+                        showError(data.message || 'خطا در افزودن ادمین');
+                    }
+                } catch (error) {
+                    showError('خطا در ارتباط با سرور');
+                }
+            });
+            
+            // ثبت تصمیم
+            document.getElementById('btn-submit-decision').addEventListener('click', async () => {
+                const nick = document.getElementById('request-nick').value;
+                const referral = document.getElementById('request-referral').value;
+                const telegramId = document.getElementById('request-telegram-id').value;
+                const status = document.getElementById('request-status').value;
+                const reason = document.getElementById('request-reason').value;
+                const tester = document.getElementById('request-tester').value;
+                
+                if (!nick || !referral || !telegramId || !status) {
+                    showError('لطفا تمام فیلدهای ضروری را پر کنید');
+                    return;
+                }
+                
+                if (status === 'rejected' && !reason) {
+                    showError('لطفا دلیل رد را وارد کنید');
+                    return;
+                }
+                
+                if (status === 'approved' && !tester) {
+                    showError('لطفا مسئول تست را انتخاب کنید');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE}/api/decide`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            initData: tg.initData,
+                            nick,
+                            referral,
+                            telegram_id: telegramId,
+                            status,
+                            reason: status === 'rejected' ? reason : null,
+                            tester: status === 'approved' ? tester : null
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showSuccess('تصمیم با موفقیت ثبت شد');
+                        document.getElementById('request-nick').value = '';
+                        document.getElementById('request-referral').value = '';
+                        document.getElementById('request-telegram-id').value = '';
+                        document.getElementById('request-status').value = '';
+                        document.getElementById('request-reason').value = '';
+                        document.getElementById('request-tester').value = '';
+                        document.getElementById('reason-field').classList.add('hidden');
+                        document.getElementById('tester-field').classList.add('hidden');
+                        showPage(pages.adminPanel);
+                    } else {
+                        showError(data.message || 'خطا در ثبت تصمیم');
+                    }
+                } catch (error) {
+                    showError('خطا در ارتباط با سرور');
+                }
+            });
+            
+            // دکمه‌های پنل کاربری
+            document.getElementById('btn-query-request').addEventListener('click', () => {
+                showPage(pages.formQuery);
+            });
+            
+            document.getElementById('btn-back-from-query').addEventListener('click', () => {
+                showPage(pages.userPanel);
+            });
+            
+            document.getElementById('btn-back-from-result').addEventListener('click', () => {
+                showPage(pages.userPanel);
+            });
+            
+            document.getElementById('btn-back-from-approved').addEventListener('click', () => {
+                showPage(pages.userPanel);
+            });
+            
+            document.getElementById('btn-back-from-notes').addEventListener('click', () => {
+                showPage(pages.approvedInfo);
+            });
+            
+            // ارسال استعلام
+            document.getElementById('btn-submit-query').addEventListener('click', async () => {
+                const nick = document.getElementById('query-nick').value;
+                const referral = document.getElementById('query-referral').value;
+                
+                if (!nick || !referral) {
+                    showError('لطفا تمام فیلدها را پر کنید');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE}/api/query`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            initData: tg.initData,
+                            nick,
+                            referral
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const resultContent = document.getElementById('result-content');
+                        const appealSection = document.getElementById('appeal-section');
+                        
+                        if (data.status === 'not_found') {
+                            resultContent.innerHTML = '<p>اطلاعات شما در دیتابیس یافت نشد.</p>';
+                            appealSection.classList.add('hidden');
+                        } else if (data.status === 'rejected') {
+                            resultContent.innerHTML = `
+                                <p>کاربر گرامی ${data.nick} با ${data.referral} متأسفانه رد شده‌اید.</p>
+                                <p>دلیل: ${data.reason}</p>
+                                <p>نگران نباشید؛ می‌توانید اعتراض ثبت کنید.</p>
+                            `;
+                            appealSection.classList.remove('hidden');
+                        } else if (data.status === 'approved') {
+                            document.getElementById('approved-content').innerHTML = `
+                                <h3>سلام و درود بر تو ${data.nick}</h3>
+                                <p>خوشبختانه درخواست عضویت شما در تیم ساپورتری تایید شده است</p>
+                                <p>مسئول تست شما: ${data.tester}</p>
+                            `;
+                            document.getElementById('tester-name').textContent = data.tester;
+                            showPage(pages.approvedInfo);
+                            return;
+                        }
+                        
+                        showPage(pages.queryResult);
+                    } else {
+                        showError(data.message || 'خطا در استعلام');
+                    }
+                } catch (error) {
+                    showError('خطا در ارتباط با سرور');
+                }
+            });
+            
+            // ارسال اعتراض
+            document.getElementById('btn-submit-appeal').addEventListener('click', async () => {
+                const message = document.getElementById('appeal-message').value;
+                const nick = document.getElementById('query-nick').value;
+                const referral = document.getElementById('query-referral').value;
+                
+                if (!message) {
+                    showError('لطفا متن اعتراض را وارد کنید');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE}/api/appeal`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            initData: tg.initData,
+                            nick,
+                            referral,
+                            message
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showSuccess('اعتراض شما با موفقیت ثبت شد');
+                        document.getElementById('appeal-message').value = '';
+                        showPage(pages.userPanel);
+                    } else {
+                        showError(data.message || 'خطا در ثبت اعتراض');
+                    }
+                } catch (error) {
+                    showError('خطا در ارتباط با سرور');
+                }
+            });
+            
+            // دکمه آماده‌ام
+            document.getElementById('btn-ready').addEventListener('click', () => {
+                showPage(pages.importantNotes);
             });
         }
         
-        // بارگذاری ادمین‌ها برای dropdown مسئول تست
+        // بارگذاری لیست ادمین‌ها برای انتخاب مسئول تست
         async function loadAdminsForTester() {
             try {
                 const response = await fetch(`${API_BASE}/api/list-admins`, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
-                    },
+                        'Content-Type': 'application/json'
+                    }
                 });
                 
                 const data = await response.json();
                 
-                if (!response.ok) {
-                    throw new Error(data.error || 'خطا در دریافت لیست ادمین‌ها');
-                }
-                
-                const testerSelect = document.getElementById('tester');
-                testerSelect.innerHTML = '<option value="">-- انتخاب مسئول تست --</option>';
-                
-                data.admins.forEach(admin => {
-                    const option = document.createElement('option');
-                    option.value = admin.nick;
-                    option.textContent = `تست(${admin.nick}) - ${admin.rank}`;
-                    testerSelect.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading admins:', error);
-            }
-        }
-        
-        // ثبت ادمین جدید
-        async function addNewAdmin() {
-            const nick = document.getElementById('admin-nick').value;
-            const referral = document.getElementById('admin-referral').value;
-            const tid = document.getElementById('admin-tid').value;
-            const rank = document.getElementById('admin-rank').value;
-            
-            if (!nick || !referral || !tid || !rank) {
-                showError('لطفاً تمام فیلدها را پر کنید');
-                return;
-            }
-            
-            showLoading();
-            
-            try {
-                const response = await fetch(`${API_BASE}/api/add-admin`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        nick,
-                        referral,
-                        telegram_id: tid,
-                        rank
-                    }),
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'خطا در افزودن ادمین');
-                }
-                
-                // بازگشت به صفحه اصلی
-                hideAllPages();
-                mainPage.classList.remove('hidden');
-                adminPanel.classList.remove('hidden');
-                
-                alert('ادمین با موفقیت افزوده شد');
-            } catch (error) {
-                showError(error.message);
-            }
-        }
-        
-        // ثبت تصمیم برای درخواست
-        async function submitDecision() {
-            const nick = document.getElementById('request-nick').value;
-            const referral = document.getElementById('request-referral').value;
-            const tid = document.getElementById('request-tid').value;
-            const status = document.getElementById('request-status').value;
-            const reason = document.getElementById('reject-reason').value;
-            const tester = document.getElementById('tester').value;
-            
-            if (!nick || !referral || !tid || !status) {
-                showError('لطفاً فیلدهای ضروری را پر کنید');
-                return;
-            }
-            
-            if (status === 'rejected' && !reason) {
-                showError('لطفاً دلیل رد را وارد کنید');
-                return;
-            }
-            
-            if (status === 'approved' && !tester) {
-                showError('لطفاً مسئول تست را انتخاب کنید');
-                return;
-            }
-            
-            showLoading();
-            
-            try {
-                const response = await fetch(`${API_BASE}/api/decide`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        nick,
-                        referral,
-                        telegram_id: tid,
-                        status,
-                        reason: status === 'rejected' ? reason : null,
-                        tester: status === 'approved' ? tester : null
-                    }),
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'خطا در ثبت تصمیم');
-                }
-                
-                // بازگشت به صفحه اصلی
-                hideAllPages();
-                mainPage.classList.remove('hidden');
-                adminPanel.classList.remove('hidden');
-                
-                alert('تصمیم با موفقیت ثبت شد');
-            } catch (error) {
-                showError(error.message);
-            }
-        }
-        
-        // استعلام درخواست کاربر
-        async function checkUserRequest() {
-            const nick = document.getElementById('nick').value;
-            const referral = document.getElementById('referral').value;
-            
-            if (!nick || !referral) {
-                showError('لطفاً نام گیم و رفرال خود را وارد کنید');
-                return;
-            }
-            
-            showLoading();
-            
-            try {
-                const response = await fetch(`${API_BASE}/api/query`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        nick,
-                        referral
-                    }),
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'خطا در استعلام درخواست');
-                }
-                
-                hideAllPages();
-                queryPage.classList.remove('hidden');
-                
-                const resultElement = document.getElementById('query-result');
-                resultElement.classList.remove('hidden');
-                
-                if (!data.exists) {
-                    resultElement.innerHTML = '<p>اطلاعات شما در دیتابیس یافت نشد.</p>';
-                } else if (data.status === 'rejected') {
-                    resultElement.innerHTML = `
-                        <p>کاربر گرامی ${data.nick} با ${data.referral} متأسفانه رد شده‌اید.</p>
-                        <p>دلیل: ${data.reason}</p>
-                        <p>نگران نباشید؛ می‌توانید اعتراض ثبت کنید.</p>
-                        <button id="appeal-btn" class="btn">اعتراض</button>
-                    `;
+                if (data.success) {
+                    const testerSelect = document.getElementById('request-tester');
+                    testerSelect.innerHTML = '<option value="">انتخاب کنید</option>';
                     
-                    document.getElementById('appeal-btn').addEventListener('click', () => {
-                        hideAllPages();
-                        appealPage.classList.remove('hidden');
-                    });
-                } else if (data.status === 'approved') {
-                    resultElement.innerHTML = `
-                        <p>درخواست شما تأیید شده است!</p>
-                        <p>مسئول تست: ${data.tester}</p>
-                        <button id="ready-btn" class="btn">آماده‌ام</button>
-                    `;
-                    
-                    document.getElementById('ready-btn').addEventListener('click', () => {
-                        alert('به زودی با شما تماس گرفته خواهد شد');
+                    data.admins.forEach(admin => {
+                        const option = document.createElement('option');
+                        option.value = admin.nick;
+                        option.textContent = `تست(${admin.nick}) - ${admin.rank}`;
+                        testerSelect.appendChild(option);
                     });
                 }
             } catch (error) {
-                showError(error.message);
+                console.error('خطا در بارگذاری لیست ادمین‌ها');
             }
         }
         
-        // ثبت اعتراض کاربر
-        async function submitAppeal() {
-            const message = document.getElementById('appeal-message').value;
-            
-            if (!message) {
-                showError('لطفاً متن اعتراض را وارد کنید');
+        // مقداردهی اولیه برنامه
+        function initApp() {
+            if (!isTelegramWebApp()) {
+                showPage(pages.browserError);
                 return;
             }
             
-            showLoading();
+            tg = window.Telegram.WebApp;
+            tg.expand();
             
-            try {
-                const nick = document.getElementById('nick').value;
-                const referral = document.getElementById('referral').value;
-                
-                const response = await fetch(`${API_BASE}/api/appeal`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        nick,
-                        referral,
-                        message
-                    }),
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'خطا در ثبت اعتراض');
-                }
-                
-                hideAllPages();
-                queryPage.classList.remove('hidden');
-                
-                const resultElement = document.getElementById('query-result');
-                resultElement.classList.remove('hidden');
-                resultElement.innerHTML = '<p class="success">اعتراض شما با موفقیت ثبت شد و به ادمین ارسال گردید.</p>';
-            } catch (error) {
-                showError(error.message);
-            }
+            setupEventListeners();
+            verifyInitData();
         }
         
-        // راه‌اندازی برنامه پس از لود شدن صفحه
-        document.addEventListener('DOMContentLoaded', () => {
-            setupNavigation();
-            
-            // ثبت event listeners
-            document.getElementById('submit-admin-btn').addEventListener('click', addNewAdmin);
-            document.getElementById('submit-decision-btn').addEventListener('click', submitDecision);
-            document.getElementById('check-request-btn').addEventListener('click', checkUserRequest);
-            document.getElementById('submit-appeal-btn').addEventListener('click', submitAppeal);
-            
-            // شروع برنامه
-            initializeApp();
-        });
+        // شروع برنامه زمانی که DOM بارگذاری شد
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
