@@ -489,7 +489,7 @@
 
     <script>
         // متغیرهای سراسری
-        let tg = window.Telegram.WebApp;
+        let tg = window.Telegram?.WebApp;
         let userTelegramId = null;
         let isAdmin = false;
         let adminData = null;
@@ -497,7 +497,7 @@
 
         // تابع بررسی اینکه آیا در محیط تلگرام هستیم یا نه
         function isTelegramEnvironment() {
-            return typeof tg !== 'undefined' && tg.initDataUnsafe && tg.initDataUnsafe.user;
+            return typeof tg !== 'undefined' && tg?.initDataUnsafe?.user;
         }
 
         // تابع دریافت اطلاعات کاربر از تلگرام
@@ -507,479 +507,458 @@
                 userTelegramId = user.id;
                 return {
                     id: user.id,
-                    firstName: user.first_name,
-                    lastName: user.last_name || '',
-                    username: user.username || '',
-                    languageCode: user.language_code || 'fa'
+                    username: user.username,
+                    first_name: user.first_name,
+                    last_name: user.last_name
                 };
             }
             return null;
         }
 
         // تابع بررسی اینکه آیا کاربر ادمین است
-        async function checkIfUserIsAdmin() {
+        async function checkIfAdmin(userId) {
             try {
-                const response = await fetch('https://rsm-helper.hupadr.workers.dev/check-admin', {
+                const response = await fetch('https://rsm-helper.hupadr.workers.dev/get-admin', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ telegramId: userTelegramId })
+                    body: JSON.stringify({ telegram_id: userId })
                 });
                 
-                const data = await response.json();
-                return data.isAdmin ? data.adminData : false;
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.admin) {
+                        adminData = data.admin;
+                        return true;
+                    }
+                }
+                return false;
             } catch (error) {
                 console.error('Error checking admin status:', error);
                 return false;
             }
         }
 
-        // تابع دریافت اطلاعات کاربر از دیتابیس
-        async function getUserData(telegramId, gameName, referral) {
+        // تابع ارسال درخواست به Worker
+        async function callWorker(endpoint, data) {
             try {
-                const response = await fetch('https://rsm-helper.hupadr.workers.dev/get-user', {
+                const response = await fetch(`https://rsm-helper.hupadr.workers.dev${endpoint}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ telegramId, gameName, referral })
+                    body: JSON.stringify(data)
                 });
                 
                 return await response.json();
             } catch (error) {
-                console.error('Error getting user data:', error);
-                return null;
+                console.error(`Error calling ${endpoint}:`, error);
+                return { success: false, error: error.message };
             }
         }
 
         // تابع نمایش صفحه مناسب بر اساس وضعیت کاربر
         function showAppropriatePanel() {
-            hideAllSections();
+            document.getElementById('loading').classList.add('hidden');
             
             if (!isTelegramEnvironment()) {
                 document.getElementById('error-panel').classList.remove('hidden');
                 return;
             }
             
-            if (isAdmin && adminData) {
+            if (isAdmin) {
                 document.getElementById('admin-panel').classList.remove('hidden');
-                document.getElementById('admin-name').textContent = adminData.gameName;
+                document.getElementById('admin-name').textContent = adminData.name;
                 document.getElementById('admin-rank').textContent = adminData.rank;
                 document.getElementById('admin-referral').textContent = adminData.referral;
                 
-                // اگر ادمین رنک پایینی دارد، دکمه افزودن ادمین را مخفی کن
-                if (adminData.rank === 'Support Warden') {
-                    document.getElementById('add-admin-btn').style.display = 'none';
-                }
+                // تنظیم گزینه‌های رنک بر اساس رنک ادمین فعلی
+                setupRankOptions();
             } else {
                 document.getElementById('user-panel').classList.remove('hidden');
             }
-            
-            document.getElementById('loading').classList.add('hidden');
         }
 
-        // تابع مخفی کردن تمام بخش‌ها
-        function hideAllSections() {
-            const sections = document.querySelectorAll('.hidden-section');
-            sections.forEach(section => section.classList.add('hidden'));
+        // تابع تنظیم گزینه‌های رنک برای افزودن ادمین جدید
+        function setupRankOptions() {
+            const rankSelect = document.getElementById('new-admin-rank');
+            rankSelect.innerHTML = '';
             
-            document.getElementById('admin-panel').classList.add('hidden');
-            document.getElementById('user-panel').classList.add('hidden');
-            document.getElementById('error-panel').classList.add('hidden');
-            document.getElementById('add-admin-section').classList.add('hidden');
-            document.getElementById('review-requests-section').classList.add('hidden');
-            document.getElementById('check-request-section').classList.add('hidden');
-            document.getElementById('request-result').classList.add('hidden');
-            document.getElementById('complaint-section').classList.add('hidden');
-        }
-
-        // تابع مقداردهی اولیه برنامه
-        async function initApp() {
-            if (!isTelegramEnvironment()) {
-                showAppropriatePanel();
-                return;
+            const ranks = {
+                'Developer': ['Support Manager', 'Support Advisor', 'Support Director', 'Support Warden'],
+                'Support Manager': ['Support Advisor', 'Support Director', 'Support Warden'],
+                'Support Advisor': ['Support Director', 'Support Warden'],
+                'Support Director': ['Support Warden']
+            };
+            
+            const currentRank = adminData.rank;
+            
+            if (ranks[currentRank]) {
+                ranks[currentRank].forEach(rank => {
+                    const option = document.createElement('option');
+                    option.value = rank;
+                    option.textContent = rank;
+                    rankSelect.appendChild(option);
+                });
             }
             
-            const telegramUser = getTelegramUserData();
-            if (telegramUser) {
-                userTelegramId = telegramUser.id;
-                adminData = await checkIfUserIsAdmin();
-                isAdmin = !!adminData;
+            // اگر ادمین نمیتواند ادمین جدید اضافه کند، دکمه افزودن ادمین را مخفی کن
+            if (currentRank === 'Support Warden' || !ranks[currentRank]) {
+                document.getElementById('add-admin-btn').style.display = 'none';
             }
-            
-            showAppropriatePanel();
         }
 
-        // مدیریت رویدادها
-        document.addEventListener('DOMContentLoaded', function() {
-            // رویدادهای دکمه‌های پنل ادمین
-            document.getElementById('add-admin-btn').addEventListener('click', function() {
+        // تابع مدیریت رویدادها
+        function setupEventListeners() {
+            // مدیریت رویدادهای ادمین
+            document.getElementById('add-admin-btn').addEventListener('click', () => {
                 document.getElementById('admin-panel').classList.add('hidden');
                 document.getElementById('add-admin-section').classList.remove('hidden');
-                populateRankOptions();
             });
             
-            document.getElementById('review-requests-btn').addEventListener('click', function() {
+            document.getElementById('review-requests-btn').addEventListener('click', () => {
                 document.getElementById('admin-panel').classList.add('hidden');
                 document.getElementById('review-requests-section').classList.remove('hidden');
-                loadPendingRequests();
+                loadRequestsList();
             });
             
-            document.getElementById('cancel-add-admin').addEventListener('click', function() {
+            document.getElementById('cancel-add-admin').addEventListener('click', () => {
                 document.getElementById('add-admin-section').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
             });
             
-            document.getElementById('cancel-add-admin-btn').addEventListener('click', function() {
+            document.getElementById('cancel-add-admin-btn').addEventListener('click', () => {
                 document.getElementById('add-admin-section').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
             });
             
-            document.getElementById('back-to-admin-panel').addEventListener('click', function() {
+            document.getElementById('back-to-admin-panel').addEventListener('click', () => {
                 document.getElementById('review-requests-section').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
             });
             
-            // رویدادهای پنل کاربر
-            document.getElementById('check-request-btn').addEventListener('click', function() {
-                document.getElementById('user-panel').classList.add('hidden');
-                document.getElementById('check-request-section').classList.remove('hidden');
-            });
-            
-            document.getElementById('back-to-user-panel').addEventListener('click', function() {
-                document.getElementById('check-request-section').classList.add('hidden');
-                document.getElementById('user-panel').classList.remove('hidden');
-            });
-            
-            document.getElementById('back-to-check-request').addEventListener('click', function() {
-                document.getElementById('request-result').classList.add('hidden');
-                document.getElementById('check-request-section').classList.remove('hidden');
-            });
-            
-            document.getElementById('back-to-request-result').addEventListener('click', function() {
-                document.getElementById('complaint-section').classList.add('hidden');
-                document.getElementById('request-result').classList.remove('hidden');
-            });
-            
-            // رویداد فرم‌ها
-            document.getElementById('add-admin-form').addEventListener('submit', handleAddAdmin);
-            document.getElementById('check-request-form').addEventListener('submit', handleCheckRequest);
-            document.getElementById('complaint-form').addEventListener('submit', handleComplaint);
-            
-            // مقداردهی اولیه برنامه
-            initApp();
-        });
-
-        // تابع پر کردن گزینه‌های رنک بر اساس رنک ادمین فعلی
-        function populateRankOptions() {
-            const rankSelect = document.getElementById('new-admin-rank');
-            rankSelect.innerHTML = '';
-            
-            if (!adminData) return;
-            
-            const availableRanks = [];
-            
-            switch(adminData.rank) {
-                case 'Developer':
-                    availableRanks.push('Support Manager', 'Support Advisor', 'Support Director', 'Support Warden');
-                    break;
-                case 'Support Manager':
-                    availableRanks.push('Support Advisor', 'Support Director', 'Support Warden');
-                    break;
-                case 'Support Advisor':
-                    availableRanks.push('Support Director', 'Support Warden');
-                    break;
-                case 'Support Director':
-                    availableRanks.push('Support Warden');
-                    break;
-            }
-            
-            availableRanks.forEach(rank => {
-                const option = document.createElement('option');
-                option.value = rank;
-                option.textContent = rank;
-                rankSelect.appendChild(option);
-            });
-        }
-
-        // تابع مدیریت ارسال فرم افزودن ادمین
-        async function handleAddAdmin(e) {
-            e.preventDefault();
-            
-            const gameName = document.getElementById('new-admin-name').value;
-            const referral = document.getElementById('new-admin-referral').value;
-            const telegramId = document.getElementById('new-admin-telegram-id').value;
-            const rank = document.getElementById('new-admin-rank').value;
-            
-            try {
-                const response = await fetch('https://rsm-helper.hupadr.workers.dev/add-admin', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        gameName,
-                        referral,
-                        telegramId,
-                        rank,
-                        addedBy: userTelegramId
-                    })
+            // مدیریت فرم افزودن ادمین
+            document.getElementById('add-admin-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('new-admin-name').value;
+                const referral = document.getElementById('new-admin-referral').value;
+                const telegramId = document.getElementById('new-admin-telegram-id').value;
+                const rank = document.getElementById('new-admin-rank').value;
+                
+                const result = await callWorker('/add-admin', {
+                    name, referral, telegram_id: telegramId, rank
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
+                if (result.success) {
                     alert('ادمین جدید با موفقیت افزوده شد.');
                     document.getElementById('add-admin-form').reset();
                     document.getElementById('add-admin-section').classList.add('hidden');
                     document.getElementById('admin-panel').classList.remove('hidden');
                 } else {
-                    alert('خطا در افزودن ادمین: ' + data.message);
+                    alert('خطا در افزودن ادمین: ' + (result.error || 'خطای ناشناخته'));
                 }
-            } catch (error) {
-                console.error('Error adding admin:', error);
-                alert('خطا در ارتباط با سرور.');
-            }
-        }
-
-        // تابع بارگذاری درخواست‌های pending
-        async function loadPendingRequests() {
-            const requestsList = document.getElementById('requests-list');
-            requestsList.innerHTML = '<div class="loader"><div class="loader-spinner"></div></div>';
-            
-            try {
-                const response = await fetch('https://rsm-helper.hupadr.workers.dev/pending-requests');
-                const data = await response.json();
-                
-                if (data.success && data.requests.length > 0) {
-                    requestsList.innerHTML = '';
-                    
-                    data.requests.forEach(request => {
-                        const requestItem = document.createElement('div');
-                        requestItem.className = 'card request-item';
-                        requestItem.innerHTML = `
-                            <h3>نام گیم: ${request.gameName}</h3>
-                            <p>رفرال: ${request.referral}</p>
-                            <p>ایدی تلگرام: ${request.telegramId}</p>
-                            <div style="margin-top: 15px;">
-                                <button class="btn btn-success approve-btn" data-id="${request.id}">تایید</button>
-                                <button class="btn btn-danger reject-btn" data-id="${request.id}">رد</button>
-                            </div>
-                        `;
-                        
-                        requestsList.appendChild(requestItem);
-                    });
-                    
-                    // اضافه کردن event listener به دکمه‌ها
-                    document.querySelectorAll('.approve-btn').forEach(btn => {
-                        btn.addEventListener('click', () => showApproveForm(btn.getAttribute('data-id')));
-                    });
-                    
-                    document.querySelectorAll('.reject-btn').forEach(btn => {
-                        btn.addEventListener('click', () => showRejectForm(btn.getAttribute('data-id')));
-                    });
-                } else {
-                    requestsList.innerHTML = '<div class="info result-message">هیچ درخواست pendingی وجود ندارد.</div>';
-                }
-            } catch (error) {
-                console.error('Error loading requests:', error);
-                requestsList.innerHTML = '<div class="error result-message">خطا در بارگذاری درخواست‌ها.</div>';
-            }
-        }
-
-        // توابع مدیریت تایید و رد درخواست‌ها
-        function showApproveForm(requestId) {
-            // این قسمت باید یک فرم modal برای تایید درخواست نمایش دهد
-            const adminsForTest = ['تست(OpenAi) - ساپورت منجیر', 'تست(Admin2) - ساپورت Advisor', 'تست(Admin3) - ساپورت Director'];
-            
-            let optionsHtml = '';
-            adminsForTest.forEach(admin => {
-                optionsHtml += `<option value="${admin}">${admin}</option>`;
             });
             
-            const testResponsible = prompt(`لطفاً مسئول تست را انتخاب کنید:\n${adminsForTest.join('\n')}`);
+            // مدیریت رویدادهای کاربر
+            document.getElementById('check-request-btn').addEventListener('click', () => {
+                document.getElementById('user-panel').classList.add('hidden');
+                document.getElementById('check-request-section').classList.remove('hidden');
+            });
             
-            if (testResponsible) {
-                approveRequest(requestId, testResponsible);
-            }
-        }
-
-        function showRejectForm(requestId) {
-            const reason = prompt('لطفاً دلیل رد درخواست را وارد کنید:');
+            document.getElementById('back-to-user-panel').addEventListener('click', () => {
+                document.getElementById('check-request-section').classList.add('hidden');
+                document.getElementById('user-panel').classList.remove('hidden');
+            });
             
-            if (reason) {
-                rejectRequest(requestId, reason);
-            }
-        }
-
-        async function approveRequest(requestId, testResponsible) {
-            try {
-                const response = await fetch('https://rsm-helper.hupadr.workers.dev/approve-request', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        requestId,
-                        testResponsible,
-                        approvedBy: userTelegramId
-                    })
+            document.getElementById('back-to-check-request').addEventListener('click', () => {
+                document.getElementById('request-result').classList.add('hidden');
+                document.getElementById('check-request-section').classList.remove('hidden');
+            });
+            
+            document.getElementById('back-to-request-result').addEventListener('click', () => {
+                document.getElementById('complaint-section').classList.add('hidden');
+                document.getElementById('request-result').classList.remove('hidden');
+            });
+            
+            // مدیریت فرم استعلام درخواست
+            document.getElementById('check-request-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('user-name').value;
+                const referral = document.getElementById('user-referral').value;
+                
+                const result = await callWorker('/check-request', {
+                    telegram_id: userTelegramId,
+                    name,
+                    referral
                 });
                 
-                const data = await response.json();
+                document.getElementById('check-request-section').classList.add('hidden');
+                document.getElementById('request-result').classList.remove('hidden');
                 
-                if (data.success) {
-                    alert('درخواست با موفقیت تایید شد.');
-                    loadPendingRequests();
-                } else {
-                    alert('خطا در تایید درخواست: ' + data.message);
-                }
-            } catch (error) {
-                console.error('Error approving request:', error);
-                alert('خطا در ارتباط با سرور.');
-            }
-        }
-
-        async function rejectRequest(requestId, reason) {
-            try {
-                const response = await fetch('https://rsm-helper.hupadr.workers.dev/reject-request', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        requestId,
-                        reason,
-                        rejectedBy: userTelegramId
-                    })
+                displayRequestResult(result, name, referral);
+            });
+            
+            // مدیریت فرم اعتراض
+            document.getElementById('complaint-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const message = document.getElementById('complaint-message').value;
+                
+                const result = await callWorker('/submit-complaint', {
+                    telegram_id: userTelegramId,
+                    message
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    alert('درخواست با موفقیت رد شد.');
-                    loadPendingRequests();
-                } else {
-                    alert('خطا در رد درخواست: ' + data.message);
-                }
-            } catch (error) {
-                console.error('Error rejecting request:', error);
-                alert('خطا در ارتباط با سرور.');
-            }
-        }
-
-        // تابع مدیریت بررسی درخواست کاربر
-        async function handleCheckRequest(e) {
-            e.preventDefault();
-            
-            const gameName = document.getElementById('user-name').value;
-            const referral = document.getElementById('user-referral').value;
-            
-            document.getElementById('check-request-section').classList.add('hidden');
-            document.getElementById('request-result').classList.remove('hidden');
-            
-            const resultContent = document.getElementById('result-content');
-            resultContent.innerHTML = '<div class="loader"><div class="loader-spinner"></div></div>';
-            
-            try {
-                const userData = await getUserData(userTelegramId, gameName, referral);
-                
-                if (userData && userData.exists) {
-                    if (userData.status === 'rejected') {
-                        resultContent.innerHTML = `
-                            <div class="error result-message">
-                                <h3><i class="fas fa-times-circle"></i> متأسفانه شما رد شدید</h3>
-                                <p>کاربر گرامی <strong>${gameName}</strong> با رفرال <strong>${referral}</strong></p>
-                                <p>طی بررسی‌هایی که انجام دادیم متأسفانه شما رد شدید.</p>
-                                <p>دلیل رد شما: <strong>${userData.reason}</strong></p>
-                                <p>نگران نباشید، هنوز فرصت اعتراض دارید.</p>
-                                <button id="complaint-btn" class="btn btn-warning" style="margin-top: 15px;">
-                                    <i class="fas fa-exclamation-triangle"></i> اعتراض به نتیجه
-                                </button>
-                            </div>
-                        `;
-                        
-                        document.getElementById('complaint-btn').addEventListener('click', function() {
-                            document.getElementById('request-result').classList.add('hidden');
-                            document.getElementById('complaint-section').classList.remove('hidden');
-                        });
-                    } else if (userData.status === 'approved') {
-                        resultContent.innerHTML = `
-                            <div class="success result-message">
-                                <h3><i class="fas fa-check-circle"></i> درخواست شما تایید شده است</h3>
-                                <p>سلام و درود بر تو <strong>${gameName}</strong></p>
-                                <p>خوشبختانه درخواست عضویت شما در تیم ساپورتری تایید شده است.</p>
-                                <div class="warning result-message" style="margin-top: 20px;">
-                                    <h4><i class="fas fa-exclamation-triangle"></i> نکات مهم:</h4>
-                                    <p>1- اگر شما جزء افراد اسپشیال (ویژه) هستید پیوی مسئول تست که رفتید شرایط رو براتون توضیح میده و در صورتی که تایید کردید یه تایم مشخص میکنه که توی اون تایم میای سرور و تیم اسپیک و ازتون تست میگیره.</p>
-                                    <p>2- در صورتی که در زمان کوتاهی بر فرض مثال کمتر از یک ماه استعفا بدید بلک لیست استف بیشتری نسبت به حالت عادی دریافت میکنید و تا وقتی بلک لیست استف باشید نمی‌تونید ( لیدر - ساب لیدر - کریتور ) شوید + امکان پانیش نیز میباشد.</p>
-                                    <p>پس در صورتی که تایم ندارید یا بنا بر دلایلی طی روز ها یا ماه های آینده به مشکل خوردید و نتوانستید فعالیت کنید، همین الان میتوانید انصراف بدید بدون هیچ برخورد و پانیشمنتی!</p>
-                                    <p>اما اگر عضو تیم ساپورتری بشید و در تایم کوتاهی (کمتر از یک ماه) به هر دلیلی از تیم ساپورتری خارج بشید برخورد در پی دارد!!!</p>
-                                    <p>ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-ـ-</p>
-                                    <p>درصورتی که تست رو قبول شدید نمونه احراز پیوی شما ارسال میشه و مطابق اون پیوی سرور منیجر @to_031 احراز هویت میکنید.</p>
-                                    <p>در ضمن ( احراز هویت های شما رو فقط و فقط سرور منیجر دارن و هیچکس دیگه ای احراز شما رو نمی‌بینه )</p>
-                                    <p>تست از تمامی قوانین سرور + سی ام دی های سرور هست (بجز نظام وظیفه)</p>
-                                    <p>مسئول تست شما: <strong>${userData.testResponsible}</strong></p>
-                                </div>
-                            </div>
-                        `;
-                    }
-                } else {
-                    resultContent.innerHTML = `
-                        <div class="warning result-message">
-                            <h3><i class="fas fa-question-circle"></i> اطلاعات یافت نشد</h3>
-                            <p>با اطلاعات ارائه شده، هیچ درخواستی یافت نشد.</p>
-                            <p>لطفاً از صحت اطلاعات وارد شده اطمینان حاصل کنید.</p>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error checking request:', error);
-                resultContent.innerHTML = `
-                    <div class="error result-message">
-                        <h3><i class="fas fa-exclamation-triangle"></i> خطا در ارتباط با سرور</h3>
-                        <p>لطفاً دوباره تلاش کنید.</p>
-                    </div>
-                `;
-            }
-        }
-
-        // تابع مدیریت ارسال اعتراض
-        async function handleComplaint(e) {
-            e.preventDefault();
-            
-            const message = document.getElementById('complaint-message').value;
-            
-            try {
-                // اینجا باید کد ارسال پیام به ادمین از طریق ربات تلگرام نوشته شود
-                // برای سادگی، از fetch برای ارسال به سرور استفاده می‌کنیم
-                const response = await fetch('https://rsm-helper.hupadr.workers.dev/send-complaint', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        telegramId: userTelegramId,
-                        message
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
+                if (result.success) {
                     alert('اعتراض شما با موفقیت ارسال شد.');
                     document.getElementById('complaint-form').reset();
                     document.getElementById('complaint-section').classList.add('hidden');
                     document.getElementById('user-panel').classList.remove('hidden');
                 } else {
-                    alert('خطا در ارسال اعتراض: ' + data.message);
+                    alert('خطا در ارسال اعتراض: ' + (result.error || 'خطای ناشناخته'));
                 }
-            } catch (error) {
-                console.error('Error sending complaint:', error);
-                alert('خطا در ارتباط با سرور.');
+            });
+        }
+
+        // تابع نمایش نتیجه استعلام
+        function displayRequestResult(result, name, referral) {
+            const resultContent = document.getElementById('result-content');
+            resultContent.innerHTML = '';
+            
+            if (result.success && result.request) {
+                const request = result.request;
+                
+                if (request.status === 'rejected') {
+                    // درخواست رد شده
+                    const rejectedDiv = document.createElement('div');
+                    rejectedDiv.className = 'result-message error';
+                    rejectedDiv.innerHTML = `
+                        <h3><i class="fas fa-times-circle"></i> متأسفانه درخواست شما رد شده است</h3>
+                        <p>کاربر گرامی <strong>${name}</strong> با رفرال <strong>${referral}</strong></p>
+                        <p>طی بررسی‌هایی که انجام دادیم متأسفانه شما رد شدید.</p>
+                        <p><strong>دلیل رد:</strong> ${request.rejection_reason || 'دلیل مشخص نشده'}</p>
+                        <p>نگران نباشید، هنوز فرصت اعتراض دارید.</p>
+                        <button id="complaint-btn" class="btn btn-warning" style="margin-top: 15px;">
+                            <i class="fas fa-exclamation-triangle"></i> اعتراض به نتیجه
+                        </button>
+                    `;
+                    resultContent.appendChild(rejectedDiv);
+                    
+                    document.getElementById('complaint-btn').addEventListener('click', () => {
+                        document.getElementById('request-result').classList.add('hidden');
+                        document.getElementById('complaint-section').classList.remove('hidden');
+                    });
+                    
+                } else if (request.status === 'approved') {
+                    // درخواست تایید شده
+                    const approvedDiv = document.createElement('div');
+                    approvedDiv.className = 'result-message success';
+                    approvedDiv.innerHTML = `
+                        <h3><i class="fas fa-check-circle"></i> درخواست شما تایید شده است</h3>
+                        <p>سلام و درود بر تو <strong>${name}</strong></p>
+                        <p>خوشبختانه درخواست عضویت شما در تیم ساپورتری تایید شده است.</p>
+                        <p><strong>مسئول تست شما:</strong> ${request.tester || 'نامشخص'}</p>
+                        
+                        <div class="card info" style="margin-top: 20px;">
+                            <h4><i class="fas fa-info-circle"></i> نکات مهم:</h4>
+                            <p>1. اگر شما جزء افراد اسپشیال (ویژه) هستید، پیوی مسئول تست شرایط رو براتون توضیح میده.</p>
+                            <p>2. در صورتی که در زمان کوتاهی (کمتر از یک ماه) استعفا بدید، بلک لیست استف بیشتری دریافت میکنید.</p>
+                            <p>3. تست از تمامی قوانین سرور + سی ام دی های سرور هست (بجز نظام وظیفه).</p>
+                            <p>4. احراز هویت های شما رو فقط و فقط سرور منیجر دارن و هیچکس دیگه‌ای احراز شما رو نمی‌بینه.</p>
+                        </div>
+                        
+                        <button id="ready-btn" class="btn btn-success" style="margin-top: 15px;">
+                            <i class="fas fa-thumbs-up"></i> آماده‌ام
+                        </button>
+                    `;
+                    resultContent.appendChild(approvedDiv);
+                    
+                    document.getElementById('ready-btn').addEventListener('click', () => {
+                        alert('با تشکر! اطلاعات لازم در اختیار شما قرار گرفت.');
+                        document.getElementById('request-result').classList.add('hidden');
+                        document.getElementById('user-panel').classList.remove('hidden');
+                    });
+                    
+                } else {
+                    // وضعیت نامشخص یا در حال بررسی
+                    const pendingDiv = document.createElement('div');
+                    pendingDiv.className = 'result-message warning';
+                    pendingDiv.innerHTML = `
+                        <h3><i class="fas fa-clock"></i> درخواست شما در حال بررسی است</h3>
+                        <p>کاربر گرامی <strong>${name}</strong> با رفرال <strong>${referral}</strong></p>
+                        <p>درخواست شما هنوز در حال بررسی می‌باشد. لطفاً稍后 مجدداً بررسی کنید.</p>
+                    `;
+                    resultContent.appendChild(pendingDiv);
+                }
+            } else {
+                // خطا یا عدم یافتن درخواست
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'result-message error';
+                errorDiv.innerHTML = `
+                    <h3><i class="fas fa-exclamation-triangle"></i> خطا در یافتن اطلاعات</h3>
+                    <p>متأسفانه اطلاعاتی برای نام گیم <strong>${name}</strong> و رفرال <strong>${referral}</strong> یافت نشد.</p>
+                    <p>لطفاً از صحت اطلاعات وارد شده اطمینان حاصل کنید.</p>
+                `;
+                resultContent.appendChild(errorDiv);
             }
         }
+
+        // تابع بارگذاری لیست درخواست‌ها برای ادمین
+        async function loadRequestsList() {
+            const requestsList = document.getElementById('requests-list');
+            requestsList.innerHTML = '<div class="loader"><div class="loader-spinner"></div></div>';
+            
+            const result = await callWorker('/get-requests', {});
+            
+            requestsList.innerHTML = '';
+            
+            if (result.success && result.requests && result.requests.length > 0) {
+                result.requests.forEach(request => {
+                    const requestItem = document.createElement('div');
+                    requestItem.className = 'card request-item';
+                    requestItem.innerHTML = `
+                        <h3>${request.name} (${request.referral})</h3>
+                        <p>ایدی: ${request.telegram_id}</p>
+                        <p>وضعیت: ${request.status || 'در حال بررسی'}</p>
+                        
+                        <div style="margin-top: 15px;">
+                            <button class="btn btn-success approve-btn" data-id="${request.id}" style="margin-left: 10px;">
+                                <i class="fas fa-check"></i> تایید
+                            </button>
+                            <button class="btn btn-danger reject-btn" data-id="${request.id}">
+                                <i class="fas fa-times"></i> رد
+                            </button>
+                        </div>
+                        
+                        <div id="reject-form-${request.id}" class="hidden" style="margin-top: 15px;">
+                            <div class="form-group">
+                                <label for="reject-reason-${request.id}">دلیل رد:</label>
+                                <input type="text" id="reject-reason-${request.id}" placeholder="دلیل رد درخواست">
+                            </div>
+                            <button class="btn btn-danger confirm-reject-btn" data-id="${request.id}">
+                                <i class="fas fa-check"></i> تایید رد
+                            </button>
+                        </div>
+                        
+                        <div id="approve-form-${request.id}" class="hidden" style="margin-top: 15px;">
+                            <div class="form-group">
+                                <label for="tester-${request.id}">مسئول تست:</label>
+                                <select id="tester-${request.id}">
+                                    <!-- گزینه‌ها به صورت پویا پر می‌شوند -->
+                                </select>
+                            </div>
+                            <button class="btn btn-success confirm-approve-btn" data-id="${request.id}">
+                                <i class="fas fa-check"></i> تایید
+                            </button>
+                        </div>
+                    `;
+                    requestsList.appendChild(requestItem);
+                    
+                    // رویدادهای دکمه‌ها
+                    requestItem.querySelector('.approve-btn').addEventListener('click', () => {
+                        const approveForm = document.getElementById(`approve-form-${request.id}`);
+                        const rejectForm = document.getElementById(`reject-form-${request.id}`);
+                        
+                        if (approveForm.classList.contains('hidden')) {
+                            approveForm.classList.remove('hidden');
+                            rejectForm.classList.add('hidden');
+                        } else {
+                            approveForm.classList.add('hidden');
+                        }
+                    });
+                    
+                    requestItem.querySelector('.reject-btn').addEventListener('click', () => {
+                        const approveForm = document.getElementById(`approve-form-${request.id}`);
+                        const rejectForm = document.getElementById(`reject-form-${request.id}`);
+                        
+                        if (rejectForm.classList.contains('hidden')) {
+                            rejectForm.classList.remove('hidden');
+                            approveForm.classList.add('hidden');
+                        } else {
+                            rejectForm.classList.add('hidden');
+                        }
+                    });
+                    
+                    requestItem.querySelector('.confirm-reject-btn').addEventListener('click', async () => {
+                        const reason = document.getElementById(`reject-reason-${request.id}`).value;
+                        
+                        if (!reason) {
+                            alert('لطفاً دلیل رد را وارد کنید.');
+                            return;
+                        }
+                        
+                        const result = await callWorker('/update-request', {
+                            request_id: request.id,
+                            status: 'rejected',
+                            rejection_reason: reason
+                        });
+                        
+                        if (result.success) {
+                            alert('درخواست با موفقیت رد شد.');
+                            loadRequestsList();
+                        } else {
+                            alert('خطا در رد درخواست: ' + (result.error || 'خطای ناشناخته'));
+                        }
+                    });
+                    
+                    requestItem.querySelector('.confirm-approve-btn').addEventListener('click', async () => {
+                        const tester = document.getElementById(`tester-${request.id}`).value;
+                        
+                        if (!tester) {
+                            alert('لطفاً مسئول تست را انتخاب کنید.');
+                            return;
+                        }
+                        
+                        const result = await callWorker('/update-request', {
+                            request_id: request.id,
+                            status: 'approved',
+                            tester: tester
+                        });
+                        
+                        if (result.success) {
+                            alert('درخواست با موفقیت تایید شد.');
+                            loadRequestsList();
+                        } else {
+                            alert('خطا در تایید درخواست: ' + (result.error || 'خطای ناشناخته'));
+                        }
+                    });
+                });
+            } else {
+                requestsList.innerHTML = `
+                    <div class="card info">
+                        <p>هیچ درخواستی برای بررسی وجود ندارد.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // تابع مقداردهی اولیه برنامه
+        async function initializeApp() {
+            if (!isTelegramEnvironment()) {
+                showAppropriatePanel();
+                return;
+            }
+            
+            const userData = getTelegramUserData();
+            if (userData) {
+                isAdmin = await checkIfAdmin(userData.id);
+            }
+            
+            showAppropriatePanel();
+            setupEventListeners();
+            
+            // گسترش وب‌اپ تلگرام به صفحه کامل
+            if (tg) {
+                tg.expand();
+                tg.enableClosingConfirmation();
+            }
+        }
+
+        // شروع برنامه پس از بارگذاری کامل صفحه
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
