@@ -1,677 +1,760 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html dir="rtl" lang="fa">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RSM Helper</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background-color: #f5f5f5;
             color: #333;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
         }
-
+        
         .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
+            max-width: 100%;
             padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin: 0 auto;
         }
-
+        
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .header h1 {
-            color: #4a5568;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            color: #718096;
-            font-size: 1.1rem;
-        }
-
-        .card {
-            background: #f7fafc;
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .btn {
-            background: #4a5568;
+            padding: 15px 0;
+            background-color: #0088cc;
             color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            margin: 5px;
-            transition: background 0.3s;
-        }
-
-        .btn:hover {
-            background: #2d3748;
-        }
-
-        .btn-primary {
-            background: #4299e1;
-        }
-
-        .btn-primary:hover {
-            background: #3182ce;
-        }
-
-        .btn-success {
-            background: #48bb78;
-        }
-
-        .btn-success:hover {
-            background: #38a169;
-        }
-
-        .btn-danger {
-            background: #f56565;
-        }
-
-        .btn-danger:hover {
-            background: #e53e3e;
-        }
-
-        .form-group {
+            border-radius: 10px 10px 0 0;
             margin-bottom: 20px;
         }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #4a5568;
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
-
-        .form-control {
+        
+        .btn {
+            display: block;
             width: 100%;
             padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #4299e1;
-        }
-
-        .nav {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            background: #edf2f7;
-            color: #4a5568;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            margin: 5px;
-            transition: all 0.3s;
-        }
-
-        .nav-btn.active {
-            background: #4299e1;
+            background-color: #0088cc;
             color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+            text-align: center;
         }
-
-        .nav-btn:hover {
-            background: #e2e8f0;
+        
+        .btn:hover {
+            background-color: #006da3;
         }
-
+        
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
         .error {
-            color: #e53e3e;
-            background: #fed7d7;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            color: #dc3545;
             text-align: center;
+            padding: 10px;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            margin-bottom: 15px;
         }
-
+        
         .success {
-            color: #38a169;
-            background: #f0fff4;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            color: #155724;
             text-align: center;
+            padding: 10px;
+            background-color: #d4edda;
+            border-radius: 5px;
+            margin-bottom: 15px;
         }
-
+        
         .loading {
             text-align: center;
-            padding: 40px;
-            color: #718096;
+            padding: 20px;
         }
-
+        
         .hidden {
             display: none;
         }
-
-        .conditional-field {
-            display: none;
+        
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
         }
-
-        .request-item {
-            background: white;
-            border-radius: 8px;
+        
+        .result-card {
+            background-color: #f8f9fa;
             padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid #e2e8f0;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-                margin: 10px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .nav-btn {
-                padding: 12px 20px;
-                font-size: 1rem;
-            }
+            border-radius: 5px;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
-    <div id="app">
+    <div class="container">
+        <!-- صفحه اصلی - انتخاب پنل -->
+        <div id="main-page" class="hidden">
+            <div class="header">
+                <h1>RSM Helper</h1>
+            </div>
+            
+            <div id="user-panel" class="hidden">
+                <div class="card">
+                    <h2>پنل کاربری</h2>
+                    <p id="user-welcome">خوش آمدید!</p>
+                    <button id="query-btn" class="btn">استعلام درخواست</button>
+                </div>
+            </div>
+            
+            <div id="admin-panel" class="hidden">
+                <div class="card">
+                    <h2>پنل مدیریت</h2>
+                    <p id="admin-welcome">خوش آمدید!</p>
+                    <button id="add-admin-btn" class="btn">افزودن ادمین</button>
+                    <button id="decide-request-btn" class="btn">تایید/رد درخواست</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- صفحه استعلام کاربر -->
+        <div id="query-page" class="hidden">
+            <div class="nav">
+                <button id="back-from-query" class="btn btn-secondary">بازگشت</button>
+            </div>
+            
+            <div class="card">
+                <h2>استعلام درخواست</h2>
+                
+                <div class="form-group">
+                    <label for="nick">نام گیم:</label>
+                    <input type="text" id="nick" placeholder="نام گیم خود را وارد کنید">
+                </div>
+                
+                <div class="form-group">
+                    <label for="referral">رفرال:</label>
+                    <input type="text" id="referral" placeholder="کد رفرال خود را وارد کنید">
+                </div>
+                
+                <button id="check-request-btn" class="btn">بررسی</button>
+                
+                <div id="query-result" class="result-card hidden"></div>
+            </div>
+        </div>
+        
+        <!-- صفحه اعتراض کاربر -->
+        <div id="appeal-page" class="hidden">
+            <div class="nav">
+                <button id="back-from-appeal" class="btn btn-secondary">بازگشت</button>
+            </div>
+            
+            <div class="card">
+                <h2>ثبت اعتراض</h2>
+                <p>لطفاً دلیل اعتراض خود را به طور کامل شرح دهید:</p>
+                
+                <div class="form-group">
+                    <textarea id="appeal-message" rows="5" placeholder="متن اعتراض..."></textarea>
+                </div>
+                
+                <button id="submit-appeal-btn" class="btn">ارسال اعتراض</button>
+            </div>
+        </div>
+        
+        <!-- صفحه افزودن ادمین -->
+        <div id="add-admin-page" class="hidden">
+            <div class="nav">
+                <button id="back-from-add-admin" class="btn btn-secondary">بازگشت</button>
+            </div>
+            
+            <div class="card">
+                <h2>افزودن ادمین جدید</h2>
+                
+                <div class="form-group">
+                    <label for="admin-nick">نام گیم:</label>
+                    <input type="text" id="admin-nick" placeholder="نام گیم ادمین">
+                </div>
+                
+                <div class="form-group">
+                    <label for="admin-referral">رفرال:</label>
+                    <input type="text" id="admin-referral" placeholder="کد رفرال ادمین">
+                </div>
+                
+                <div class="form-group">
+                    <label for="admin-tid">آیدی عددی تلگرام:</label>
+                    <input type="number" id="admin-tid" placeholder="آیدی عددی تلگرام">
+                </div>
+                
+                <div class="form-group">
+                    <label for="admin-rank">رنک:</label>
+                    <select id="admin-rank">
+                        <option value="">-- انتخاب رنک --</option>
+                        <option value="Support Warden">Support Warden</option>
+                        <option value="Support Director">Support Director</option>
+                        <option value="Support Advisor">Support Advisor</option>
+                        <option value="Support Manager">Support Manager</option>
+                        <option value="Developer">Developer</option>
+                    </select>
+                </div>
+                
+                <button id="submit-admin-btn" class="btn">ثبت ادمین</button>
+            </div>
+        </div>
+        
+        <!-- صفحه تایید/رد درخواست -->
+        <div id="decide-request-page" class="hidden">
+            <div class="nav">
+                <button id="back-from-decide" class="btn btn-secondary">بازگشت</button>
+            </div>
+            
+            <div class="card">
+                <h2>تایید/رد درخواست</h2>
+                
+                <div class="form-group">
+                    <label for="request-nick">نام گیم:</label>
+                    <input type="text" id="request-nick" placeholder="نام گیم متقاضی">
+                </div>
+                
+                <div class="form-group">
+                    <label for="request-referral">رفرال:</label>
+                    <input type="text" id="request-referral" placeholder="کد رفرال متقاضی">
+                </div>
+                
+                <div class="form-group">
+                    <label for="request-tid">آیدی عددی تلگرام:</label>
+                    <input type="number" id="request-tid" placeholder="آیدی عددی تلگرام متقاضی">
+                </div>
+                
+                <div class="form-group">
+                    <label for="request-status">نوع درخواست:</label>
+                    <select id="request-status">
+                        <option value="">-- انتخاب نوع --</option>
+                        <option value="approved">تایید</option>
+                        <option value="rejected">رد</option>
+                    </select>
+                </div>
+                
+                <div id="reject-reason-container" class="form-group hidden">
+                    <label for="reject-reason">دلیل رد:</label>
+                    <textarea id="reject-reason" rows="3" placeholder="دلیل رد درخواست"></textarea>
+                </div>
+                
+                <div id="tester-container" class="form-group hidden">
+                    <label for="tester">مسئول تست:</label>
+                    <select id="tester">
+                        <option value="">-- انتخاب مسئول تست --</option>
+                    </select>
+                </div>
+                
+                <button id="submit-decision-btn" class="btn">ثبت تصمیم</button>
+            </div>
+        </div>
+        
+        <!-- صفحه خطا -->
+        <div id="error-page" class="hidden">
+            <div class="card">
+                <h2 class="error">خطا</h2>
+                <p id="error-message"></p>
+            </div>
+        </div>
+        
+        <!-- صفحه لودینگ -->
         <div id="loading" class="loading">
-            <h2>در حال بارگذاری...</h2>
-        </div>
-
-        <div id="error-screen" class="container hidden">
-            <div class="error">
-                <h2>خطا!</h2>
-                <p>این برنامه فقط در محیط Mini App تلگرام قابل دسترسی است.</p>
-            </div>
-        </div>
-
-        <div id="main-content" class="hidden">
-            <div class="container">
-                <div class="header">
-                    <h1>RSM Helper</h1>
-                    <p id="welcome-message">خوش آمدید</p>
-                </div>
-
-                <div id="admin-panel" class="hidden">
-                    <div class="nav">
-                        <button class="nav-btn active" onclick="showPage('admin-dashboard')">داشبورد</button>
-                        <button class="nav-btn" onclick="showPage('add-admin')">افزودن ادمین</button>
-                        <button class="nav-btn" onclick="showPage('approve-requests')">تایید/رد درخواست</button>
-                    </div>
-
-                    <div id="admin-dashboard" class="page">
-                        <div class="card">
-                            <h3>اطلاعات ادمین</h3>
-                            <p id="admin-info">در حال بارگذاری...</p>
-                        </div>
-                    </div>
-
-                    <div id="add-admin" class="page hidden">
-                        <div class="card">
-                            <h3>افزودن ادمین جدید</h3>
-                            <form id="add-admin-form">
-                                <div class="form-group">
-                                    <label>آیدی تلگرام</label>
-                                    <input type="text" class="form-control" name="telegram_id" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>نام کاربری</label>
-                                    <input type="text" class="form-control" name="username" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>رفرال</label>
-                                    <input type="text" class="form-control" name="referral" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>رتبه</label>
-                                    <select class="form-control" name="rank" required>
-                                        <option value="">انتخاب کنید</option>
-                                        <option value="Developer">Developer</option>
-                                        <option value="Support Manager">Support Manager</option>
-                                        <option value="Support Advisor">Support Advisor</option>
-                                        <option value="Support Director">Support Director</option>
-                                        <option value="Support Warden">Support Warden</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-success">ذخیره ادمین</button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div id="approve-requests" class="page hidden">
-                        <div class="card">
-                            <h3>مدیریت درخواست‌ها</h3>
-                            <div id="requests-list">
-                                <p>در حال بارگذاری درخواست‌ها...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="user-panel" class="hidden">
-                    <div class="nav">
-                        <button class="nav-btn active" onclick="showPage('user-dashboard')">داشبورد</button>
-                        <button class="nav-btn" onclick="showPage('estelam')">استعلام درخواست</button>
-                    </div>
-
-                    <div id="user-dashboard" class="page">
-                        <div class="card">
-                            <h3>خوش آمدید کاربر گرامی</h3>
-                            <p>برای استعلام وضعیت درخواست خود، از منوی بالا استفاده کنید.</p>
-                        </div>
-                    </div>
-
-                    <div id="estelam" class="page hidden">
-                        <div class="card">
-                            <h3>استعلام درخواست</h3>
-                            <form id="estelam-form">
-                                <div class="form-group">
-                                    <label>نام بازی</label>
-                                    <input type="text" class="form-control" name="game_name" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>رفرال</label>
-                                    <input type="text" class="form-control" name="referral" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">استعلام</button>
-                            </form>
-                            <div id="estelam-result" class="hidden"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <p>در حال بارگذاری...</p>
         </div>
     </div>
 
     <script>
-        const API_BASE = 'https://rsm-helper.hupadr.workers.dev';
-        const ADMIN_IDS = [5022639349, 7211175805];
+        // متغیرهای جهانی
         let currentUser = null;
-        let allAdmins = [];
-
-        // Initialize the app
-        function initApp() {
-            if (!window.Telegram?.WebApp) {
-                document.getElementById('error-screen').classList.remove('hidden');
-                document.getElementById('loading').classList.add('hidden');
-                return;
-            }
-
-            const tg = window.Telegram.WebApp;
-            tg.expand();
-            tg.enableClosingConfirmation();
-
-            try {
-                const initData = tg.initDataUnsafe;
-                if (initData && initData.user) {
-                    currentUser = initData.user;
-                    checkUserRole();
-                } else {
-                    throw new Error('User data not available');
-                }
-            } catch (error) {
-                document.getElementById('error-screen').classList.remove('hidden');
-                document.getElementById('loading').classList.add('hidden');
-            }
+        let isAdmin = false;
+        let adminMeta = null;
+        const API_BASE = 'https://rsm-helper.hupadr.workers.dev';
+        
+        // المنت های اصلی
+        const mainPage = document.getElementById('main-page');
+        const userPanel = document.getElementById('user-panel');
+        const adminPanel = document.getElementById('admin-panel');
+        const queryPage = document.getElementById('query-page');
+        const appealPage = document.getElementById('appeal-page');
+        const addAdminPage = document.getElementById('add-admin-page');
+        const decideRequestPage = document.getElementById('decide-request-page');
+        const errorPage = document.getElementById('error-page');
+        const loadingElement = document.getElementById('loading');
+        const errorMessageElement = document.getElementById('error-message');
+        
+        // نمایش خطا
+        function showError(message) {
+            errorMessageElement.textContent = message;
+            hideAllPages();
+            errorPage.classList.remove('hidden');
         }
-
-        // Check if user is admin or normal user
-        async function checkUserRole() {
-            const isAdmin = ADMIN_IDS.includes(parseInt(currentUser.id));
+        
+        // پنهان کردن همه صفحات
+        function hideAllPages() {
+            mainPage.classList.add('hidden');
+            userPanel.classList.add('hidden');
+            adminPanel.classList.add('hidden');
+            queryPage.classList.add('hidden');
+            appealPage.classList.add('hidden');
+            addAdminPage.classList.add('hidden');
+            decideRequestPage.classList.add('hidden');
+            errorPage.classList.add('hidden');
+            loadingElement.classList.add('hidden');
+        }
+        
+        // نمایش صفحه لودینگ
+        function showLoading() {
+            hideAllPages();
+            loadingElement.classList.remove('hidden');
+        }
+        
+        // بررسی اینکه آیا در محیط تلگرام هستیم یا نه
+        function isTelegramWebApp() {
+            return window.Telegram && window.Telegram.WebApp;
+        }
+        
+        // دریافت initData از تلگرام
+        function getInitData() {
+            if (isTelegramWebApp()) {
+                return window.Telegram.WebApp.initData;
+            }
+            return null;
+        }
+        
+        // بررسی صحت initData با سرور
+        async function verifyInitData() {
+            const initData = getInitData();
+            if (!initData) {
+                throw new Error('داده‌های اولیه یافت نشد');
+            }
             
-            if (isAdmin) {
-                document.getElementById('admin-panel').classList.remove('hidden');
-                document.getElementById('welcome-message').textContent = `ادمین گرامی خوش آمدید`;
-                await loadAdminInfo();
-                await loadAdmins(); // Load all admins for the dropdown
-            } else {
-                document.getElementById('user-panel').classList.remove('hidden');
-                document.getElementById('welcome-message').textContent = `کاربر گرامی خوش آمدید`;
-            }
-
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-        }
-
-        // Load admin information
-        async function loadAdminInfo() {
             try {
-                const response = await fetch(`${API_BASE}/api/admins/${currentUser.id}`);
-                if (response.ok) {
-                    const admin = await response.json();
-                    document.getElementById('admin-info').innerHTML = `
-                        <strong>نام کاربری:</strong> ${admin.username}<br>
-                        <strong>رتبه:</strong> ${admin.rank}<br>
-                        <strong>رفرال:</strong> ${admin.referral}
-                    `;
-                }
-            } catch (error) {
-                console.error('Error loading admin info:', error);
-            }
-        }
-
-        // Load all admins for dropdown
-        async function loadAdmins() {
-            try {
-                const response = await fetch(`${API_BASE}/api/admins`);
-                if (response.ok) {
-                    allAdmins = await response.json();
-                }
-            } catch (error) {
-                console.error('Error loading admins:', error);
-            }
-        }
-
-        // Show/hide pages
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.add('hidden');
-            });
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.getElementById(pageId).classList.remove('hidden');
-            event.target.classList.add('active');
-            
-            // If showing approve requests page, load the requests
-            if (pageId === 'approve-requests') {
-                loadRequests();
-            }
-        }
-
-        // Add admin form submission
-        document.getElementById('add-admin-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData.entries());
-
-            try {
-                const response = await fetch(`${API_BASE}/api/admins`, {
+                const response = await fetch(`${API_BASE}/api/verify-init`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({ initData }),
                 });
-
-                if (response.ok) {
-                    alert('ادمین با موفقیت اضافه شد');
-                    e.target.reset();
-                    await loadAdmins(); // Reload admins to include the new one
-                } else {
-                    alert('خطا در افزودن ادمین');
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'خطا در تأیید هویت');
                 }
+                
+                return data;
             } catch (error) {
-                alert('خطا در ارتباط با سرور');
+                console.error('Error verifying init data:', error);
+                throw new Error('خطا در ارتباط با سرور');
             }
-        });
-
-        // Estelam form submission
-        document.getElementById('estelam-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const referral = formData.get('referral');
-
+        }
+        
+        // راه‌اندازی اولیه برنامه
+        async function initializeApp() {
+            // بررسی محیط اجرا
+            if (!isTelegramWebApp()) {
+                showError('این مینی‌اپ فقط داخل تلگرام کار می‌کند.');
+                return;
+            }
+            
+            showLoading();
+            
             try {
-                const response = await fetch(`${API_BASE}/api/requests/${referral}`);
-                const result = await response.json();
-
-                const resultDiv = document.getElementById('estelam-result');
-                resultDiv.classList.remove('hidden');
-
-                if (response.ok) {
-                    if (result.status === 'approved') {
-                        resultDiv.innerHTML = `
-                            <div class="success">
-                                <h4>✅ درخواست تایید شده است</h4>
-                                <p><strong>مسئول تست:</strong> ${result.test_responsible}</p>
-                                <p><strong>شرایط تست:</strong> لطفا با مسئول تست هماهنگ کنید</p>
-                            </div>
-                        `;
-                    } else if (result.status === 'rejected') {
-                        resultDiv.innerHTML = `
-                            <div class="error">
-                                <h4>❌ درخواست رد شده است</h4>
-                                <p><strong>دلیل:</strong> ${result.reason}</p>
-                                <button class="btn btn-danger" onclick="sendAppeal('${result.reason}')">اعتراض</button>
-                            </div>
-                        `;
-                    } else {
-                        resultDiv.innerHTML = `
-                            <div class="success">
-                                <h4>⏳ درخواست در حال بررسی</h4>
-                                <p>درخواست شما در صف بررسی قرار دارد</p>
-                            </div>
-                        `;
+                // تأیید initData
+                const verificationResult = await verifyInitData();
+                currentUser = verificationResult.user;
+                isAdmin = verificationResult.is_admin;
+                adminMeta = verificationResult.admin_meta;
+                
+                // نمایش پنل مناسب
+                hideAllPages();
+                mainPage.classList.remove('hidden');
+                
+                if (isAdmin) {
+                    document.getElementById('admin-welcome').textContent = 
+                        `خوش آمدید ${adminMeta.nick} (${adminMeta.rank})! رفرال: ${adminMeta.referral}`;
+                    adminPanel.classList.remove('hidden');
+                    
+                    // مخفی کردن دکمه افزودن ادمین اگر دسترسی نداشته باشد
+                    if (adminMeta.rank === 'Support Warden') {
+                        document.getElementById('add-admin-btn').classList.add('hidden');
                     }
                 } else {
-                    resultDiv.innerHTML = `
-                        <div class="error">
-                            <h4>هیچ اطلاعاتی یافت نشد</h4>
-                            <p>لطفا از صحت اطلاعات وارد شده اطمینان حاصل کنید</p>
-                        </div>
-                    `;
+                    document.getElementById('user-welcome').textContent = 
+                        `خوش آمدید ${currentUser.first_name || 'کاربر'}!`;
+                    userPanel.classList.remove('hidden');
                 }
             } catch (error) {
-                alert('خطا در ارتباط با سرور');
+                showError(error.message);
             }
-        });
-
-        // Send appeal function
-        function sendAppeal(reason) {
-            const message = `اعتراض به رد درخواست - دلیل: ${reason}`;
+        }
+        
+        // مدیریت ناوبری بین صفحات
+        function setupNavigation() {
+            // رفتن به صفحه استعلام
+            document.getElementById('query-btn').addEventListener('click', () => {
+                hideAllPages();
+                queryPage.classList.remove('hidden');
+            });
             
-            fetch(`${API_BASE}/api/appeals`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    telegram_id: currentUser.id,
-                    message: message
-                })
-            }).then(() => {
-                alert('اعتراض شما ثبت شد و به ادمین ارسال خواهد شد');
+            // بازگشت از صفحه استعلام
+            document.getElementById('back-from-query').addEventListener('click', () => {
+                hideAllPages();
+                mainPage.classList.remove('hidden');
+                if (isAdmin) {
+                    adminPanel.classList.remove('hidden');
+                } else {
+                    userPanel.classList.remove('hidden');
+                }
+            });
+            
+            // رفتن به صفحه افزودن ادمین
+            document.getElementById('add-admin-btn').addEventListener('click', () => {
+                hideAllPages();
+                addAdminPage.classList.remove('hidden');
+            });
+            
+            // بازگشت از صفحه افزودن ادمین
+            document.getElementById('back-from-add-admin').addEventListener('click', () => {
+                hideAllPages();
+                mainPage.classList.remove('hidden');
+                adminPanel.classList.remove('hidden');
+            });
+            
+            // رفتن به صفحه تایید/رد درخواست
+            document.getElementById('decide-request-btn').addEventListener('click', () => {
+                hideAllPages();
+                decideRequestPage.classList.remove('hidden');
+                loadAdminsForTester();
+            });
+            
+            // بازگشت از صفحه تایید/رد درخواست
+            document.getElementById('back-from-decide').addEventListener('click', () => {
+                hideAllPages();
+                mainPage.classList.remove('hidden');
+                adminPanel.classList.remove('hidden');
+            });
+            
+            // بازگشت از صفحه اعتراض
+            document.getElementById('back-from-appeal').addEventListener('click', () => {
+                hideAllPages();
+                queryPage.classList.remove('hidden');
+            });
+            
+            // تغییر وضعیت درخواست (تایید/رد)
+            document.getElementById('request-status').addEventListener('change', (e) => {
+                const status = e.target.value;
+                const rejectReasonContainer = document.getElementById('reject-reason-container');
+                const testerContainer = document.getElementById('tester-container');
+                
+                if (status === 'rejected') {
+                    rejectReasonContainer.classList.remove('hidden');
+                    testerContainer.classList.add('hidden');
+                } else if (status === 'approved') {
+                    rejectReasonContainer.classList.add('hidden');
+                    testerContainer.classList.remove('hidden');
+                } else {
+                    rejectReasonContainer.classList.add('hidden');
+                    testerContainer.classList.add('hidden');
+                }
             });
         }
-
-        // Load requests for admin
-        async function loadRequests() {
+        
+        // بارگذاری ادمین‌ها برای dropdown مسئول تست
+        async function loadAdminsForTester() {
             try {
-                const response = await fetch(`${API_BASE}/api/requests`);
-                if (response.ok) {
-                    const requests = await response.json();
-                    const requestsList = document.getElementById('requests-list');
+                const response = await fetch(`${API_BASE}/api/list-admins`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'خطا در دریافت لیست ادمین‌ها');
+                }
+                
+                const testerSelect = document.getElementById('tester');
+                testerSelect.innerHTML = '<option value="">-- انتخاب مسئول تست --</option>';
+                
+                data.admins.forEach(admin => {
+                    const option = document.createElement('option');
+                    option.value = admin.nick;
+                    option.textContent = `تست(${admin.nick}) - ${admin.rank}`;
+                    testerSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading admins:', error);
+            }
+        }
+        
+        // ثبت ادمین جدید
+        async function addNewAdmin() {
+            const nick = document.getElementById('admin-nick').value;
+            const referral = document.getElementById('admin-referral').value;
+            const tid = document.getElementById('admin-tid').value;
+            const rank = document.getElementById('admin-rank').value;
+            
+            if (!nick || !referral || !tid || !rank) {
+                showError('لطفاً تمام فیلدها را پر کنید');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/add-admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nick,
+                        referral,
+                        telegram_id: tid,
+                        rank
+                    }),
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'خطا در افزودن ادمین');
+                }
+                
+                // بازگشت به صفحه اصلی
+                hideAllPages();
+                mainPage.classList.remove('hidden');
+                adminPanel.classList.remove('hidden');
+                
+                alert('ادمین با موفقیت افزوده شد');
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+        
+        // ثبت تصمیم برای درخواست
+        async function submitDecision() {
+            const nick = document.getElementById('request-nick').value;
+            const referral = document.getElementById('request-referral').value;
+            const tid = document.getElementById('request-tid').value;
+            const status = document.getElementById('request-status').value;
+            const reason = document.getElementById('reject-reason').value;
+            const tester = document.getElementById('tester').value;
+            
+            if (!nick || !referral || !tid || !status) {
+                showError('لطفاً فیلدهای ضروری را پر کنید');
+                return;
+            }
+            
+            if (status === 'rejected' && !reason) {
+                showError('لطفاً دلیل رد را وارد کنید');
+                return;
+            }
+            
+            if (status === 'approved' && !tester) {
+                showError('لطفاً مسئول تست را انتخاب کنید');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/decide`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nick,
+                        referral,
+                        telegram_id: tid,
+                        status,
+                        reason: status === 'rejected' ? reason : null,
+                        tester: status === 'approved' ? tester : null
+                    }),
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'خطا در ثبت تصمیم');
+                }
+                
+                // بازگشت به صفحه اصلی
+                hideAllPages();
+                mainPage.classList.remove('hidden');
+                adminPanel.classList.remove('hidden');
+                
+                alert('تصمیم با موفقیت ثبت شد');
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+        
+        // استعلام درخواست کاربر
+        async function checkUserRequest() {
+            const nick = document.getElementById('nick').value;
+            const referral = document.getElementById('referral').value;
+            
+            if (!nick || !referral) {
+                showError('لطفاً نام گیم و رفرال خود را وارد کنید');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nick,
+                        referral
+                    }),
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'خطا در استعلام درخواست');
+                }
+                
+                hideAllPages();
+                queryPage.classList.remove('hidden');
+                
+                const resultElement = document.getElementById('query-result');
+                resultElement.classList.remove('hidden');
+                
+                if (!data.exists) {
+                    resultElement.innerHTML = '<p>اطلاعات شما در دیتابیس یافت نشد.</p>';
+                } else if (data.status === 'rejected') {
+                    resultElement.innerHTML = `
+                        <p>کاربر گرامی ${data.nick} با ${data.referral} متأسفانه رد شده‌اید.</p>
+                        <p>دلیل: ${data.reason}</p>
+                        <p>نگران نباشید؛ می‌توانید اعتراض ثبت کنید.</p>
+                        <button id="appeal-btn" class="btn">اعتراض</button>
+                    `;
                     
-                    if (requests.length === 0) {
-                        requestsList.innerHTML = '<p>هیچ درخواستی یافت نشد</p>';
-                        return;
-                    }
-
-                    requestsList.innerHTML = requests.map(request => `
-                        <div class="request-item">
-                            <h4>درخواست #${request.id}</h4>
-                            <p><strong>نام بازی:</strong> ${request.game_name}</p>
-                            <p><strong>رفرال:</strong> ${request.referral}</p>
-                            <p><strong>آیدی تلگرام:</strong> ${request.telegram_id}</p>
-                            <p><strong>وضعیت:</strong> ${request.status}</p>
-                            
-                            ${request.status === 'pending' ? `
-                                <form class="request-action-form" data-request-id="${request.id}">
-                                    <div class="form-group">
-                                        <label>نوع درخواست</label>
-                                        <select class="form-control request-type" name="request_type" required>
-                                            <option value="">انتخاب کنید</option>
-                                            <option value="approve">تایید</option>
-                                            <option value="reject">رد</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="form-group conditional-field reject-reason">
-                                        <label>دلیل رد</label>
-                                        <textarea class="form-control" name="reject_reason" rows="3"></textarea>
-                                    </div>
-                                    
-                                    <div class="form-group conditional-field test-responsible">
-                                        <label>مسئول تست</label>
-                                        <select class="form-control" name="test_responsible">
-                                            <option value="">انتخاب کنید</option>
-                                            ${allAdmins.map(admin => 
-                                                `<option value="${admin.username}">${admin.username} - ${admin.rank}</option>`
-                                            ).join('')}
-                                        </select>
-                                    </div>
-                                    
-                                    <button type="submit" class="btn btn-success">ثبت تصمیم</button>
-                                </form>
-                            ` : ''}
-                        </div>
-                    `).join('');
-
-                    // Add event listeners to the new forms
-                    document.querySelectorAll('.request-type').forEach(select => {
-                        select.addEventListener('change', function() {
-                            const form = this.closest('form');
-                            const requestId = form.getAttribute('data-request-id');
-                            
-                            // Hide all conditional fields first
-                            form.querySelectorAll('.conditional-field').forEach(field => {
-                                field.style.display = 'none';
-                            });
-                            
-                            // Show relevant fields based on selection
-                            if (this.value === 'reject') {
-                                form.querySelector('.reject-reason').style.display = 'block';
-                            } else if (this.value === 'approve') {
-                                form.querySelector('.test-responsible').style.display = 'block';
-                            }
-                        });
+                    document.getElementById('appeal-btn').addEventListener('click', () => {
+                        hideAllPages();
+                        appealPage.classList.remove('hidden');
                     });
-
-                    // Add form submission handlers
-                    document.querySelectorAll('.request-action-form').forEach(form => {
-                        form.addEventListener('submit', function(e) {
-                            e.preventDefault();
-                            const formData = new FormData(this);
-                            const requestId = this.getAttribute('data-request-id');
-                            const requestType = formData.get('request_type');
-                            
-                            if (requestType === 'approve') {
-                                const testResponsible = formData.get('test_responsible');
-                                if (!testResponsible) {
-                                    alert('لطفا مسئول تست را انتخاب کنید');
-                                    return;
-                                }
-                                approveRequest(requestId, testResponsible);
-                            } else if (requestType === 'reject') {
-                                const rejectReason = formData.get('reject_reason');
-                                if (!rejectReason) {
-                                    alert('لطفا دلیل رد را وارد کنید');
-                                    return;
-                                }
-                                rejectRequest(requestId, rejectReason);
-                            }
-                        });
+                } else if (data.status === 'approved') {
+                    resultElement.innerHTML = `
+                        <p>درخواست شما تأیید شده است!</p>
+                        <p>مسئول تست: ${data.tester}</p>
+                        <button id="ready-btn" class="btn">آماده‌ام</button>
+                    `;
+                    
+                    document.getElementById('ready-btn').addEventListener('click', () => {
+                        alert('به زودی با شما تماس گرفته خواهد شد');
                     });
                 }
             } catch (error) {
-                console.error('Error loading requests:', error);
+                showError(error.message);
             }
         }
-
-        // Approve request
-        async function approveRequest(requestId, testResponsible) {
+        
+        // ثبت اعتراض کاربر
+        async function submitAppeal() {
+            const message = document.getElementById('appeal-message').value;
+            
+            if (!message) {
+                showError('لطفاً متن اعتراض را وارد کنید');
+                return;
+            }
+            
+            showLoading();
+            
             try {
-                const response = await fetch(`${API_BASE}/api/requests/${requestId}`, {
-                    method: 'PUT',
+                const nick = document.getElementById('nick').value;
+                const referral = document.getElementById('referral').value;
+                
+                const response = await fetch(`${API_BASE}/api/appeal`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        status: 'approved',
-                        test_responsible: testResponsible
-                    })
+                        nick,
+                        referral,
+                        message
+                    }),
                 });
-
-                if (response.ok) {
-                    alert('درخواست تایید شد');
-                    loadRequests();
-                } else {
-                    alert('خطا در تایید درخواست');
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'خطا در ثبت اعتراض');
                 }
+                
+                hideAllPages();
+                queryPage.classList.remove('hidden');
+                
+                const resultElement = document.getElementById('query-result');
+                resultElement.classList.remove('hidden');
+                resultElement.innerHTML = '<p class="success">اعتراض شما با موفقیت ثبت شد و به ادمین ارسال گردید.</p>';
             } catch (error) {
-                alert('خطا در ارتباط با سرور');
+                showError(error.message);
             }
         }
-
-        // Reject request
-        async function rejectRequest(requestId, reason) {
-            try {
-                const response = await fetch(`${API_BASE}/api/requests/${requestId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        status: 'rejected',
-                        reason: reason
-                    })
-                });
-
-                if (response.ok) {
-                    alert('درخواست رد شد');
-                    loadRequests();
-                } else {
-                    alert('خطا در رد درخواست');
-                }
-            } catch (error) {
-                alert('خطا در ارتباط با سرور');
-            }
-        }
-
-        // Initialize the app when page loads
-        window.addEventListener('load', initApp);
-
-        // Make functions available globally
-        window.showPage = showPage;
-        window.sendAppeal = sendAppeal;
-        window.approveRequest = approveRequest;
-        window.rejectRequest = rejectRequest;
-        window.loadRequests = loadRequests;
+        
+        // راه‌اندازی برنامه پس از لود شدن صفحه
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavigation();
+            
+            // ثبت event listeners
+            document.getElementById('submit-admin-btn').addEventListener('click', addNewAdmin);
+            document.getElementById('submit-decision-btn').addEventListener('click', submitDecision);
+            document.getElementById('check-request-btn').addEventListener('click', checkUserRequest);
+            document.getElementById('submit-appeal-btn').addEventListener('click', submitAppeal);
+            
+            // شروع برنامه
+            initializeApp();
+        });
     </script>
 </body>
 </html>
