@@ -176,6 +176,18 @@
             display: none;
         }
 
+        .conditional-field {
+            display: none;
+        }
+
+        .request-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -308,6 +320,7 @@
         const API_BASE = 'https://rsm-helper.hupadr.workers.dev';
         const ADMIN_IDS = [5022639349, 7211175805];
         let currentUser = null;
+        let allAdmins = [];
 
         // Initialize the app
         function initApp() {
@@ -342,7 +355,8 @@
             if (isAdmin) {
                 document.getElementById('admin-panel').classList.remove('hidden');
                 document.getElementById('welcome-message').textContent = `ادمین گرامی خوش آمدید`;
-                loadAdminInfo();
+                await loadAdminInfo();
+                await loadAdmins(); // Load all admins for the dropdown
             } else {
                 document.getElementById('user-panel').classList.remove('hidden');
                 document.getElementById('welcome-message').textContent = `کاربر گرامی خوش آمدید`;
@@ -369,6 +383,18 @@
             }
         }
 
+        // Load all admins for dropdown
+        async function loadAdmins() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admins`);
+                if (response.ok) {
+                    allAdmins = await response.json();
+                }
+            } catch (error) {
+                console.error('Error loading admins:', error);
+            }
+        }
+
         // Show/hide pages
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => {
@@ -380,6 +406,11 @@
             
             document.getElementById(pageId).classList.remove('hidden');
             event.target.classList.add('active');
+            
+            // If showing approve requests page, load the requests
+            if (pageId === 'approve-requests') {
+                loadRequests();
+            }
         }
 
         // Add admin form submission
@@ -400,6 +431,7 @@
                 if (response.ok) {
                     alert('ادمین با موفقیت اضافه شد');
                     e.target.reset();
+                    await loadAdmins(); // Reload admins to include the new one
                 } else {
                     alert('خطا در افزودن ادمین');
                 }
@@ -491,17 +523,90 @@
                     }
 
                     requestsList.innerHTML = requests.map(request => `
-                        <div class="card" style="margin-bottom: 15px;">
+                        <div class="request-item">
                             <h4>درخواست #${request.id}</h4>
-                            <p><strong>بازی:</strong> ${request.game_name}</p>
+                            <p><strong>نام بازی:</strong> ${request.game_name}</p>
                             <p><strong>رفرال:</strong> ${request.referral}</p>
+                            <p><strong>آیدی تلگرام:</strong> ${request.telegram_id}</p>
                             <p><strong>وضعیت:</strong> ${request.status}</p>
+                            
                             ${request.status === 'pending' ? `
-                                <button class="btn btn-success" onclick="approveRequest(${request.id})">تایید</button>
-                                <button class="btn btn-danger" onclick="rejectRequest(${request.id})">رد</button>
+                                <form class="request-action-form" data-request-id="${request.id}">
+                                    <div class="form-group">
+                                        <label>نوع درخواست</label>
+                                        <select class="form-control request-type" name="request_type" required>
+                                            <option value="">انتخاب کنید</option>
+                                            <option value="approve">تایید</option>
+                                            <option value="reject">رد</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group conditional-field reject-reason">
+                                        <label>دلیل رد</label>
+                                        <textarea class="form-control" name="reject_reason" rows="3"></textarea>
+                                    </div>
+                                    
+                                    <div class="form-group conditional-field test-responsible">
+                                        <label>مسئول تست</label>
+                                        <select class="form-control" name="test_responsible">
+                                            <option value="">انتخاب کنید</option>
+                                            ${allAdmins.map(admin => 
+                                                `<option value="${admin.username}">${admin.username} - ${admin.rank}</option>`
+                                            ).join('')}
+                                        </select>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-success">ثبت تصمیم</button>
+                                </form>
                             ` : ''}
                         </div>
                     `).join('');
+
+                    // Add event listeners to the new forms
+                    document.querySelectorAll('.request-type').forEach(select => {
+                        select.addEventListener('change', function() {
+                            const form = this.closest('form');
+                            const requestId = form.getAttribute('data-request-id');
+                            
+                            // Hide all conditional fields first
+                            form.querySelectorAll('.conditional-field').forEach(field => {
+                                field.style.display = 'none';
+                            });
+                            
+                            // Show relevant fields based on selection
+                            if (this.value === 'reject') {
+                                form.querySelector('.reject-reason').style.display = 'block';
+                            } else if (this.value === 'approve') {
+                                form.querySelector('.test-responsible').style.display = 'block';
+                            }
+                        });
+                    });
+
+                    // Add form submission handlers
+                    document.querySelectorAll('.request-action-form').forEach(form => {
+                        form.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            const formData = new FormData(this);
+                            const requestId = this.getAttribute('data-request-id');
+                            const requestType = formData.get('request_type');
+                            
+                            if (requestType === 'approve') {
+                                const testResponsible = formData.get('test_responsible');
+                                if (!testResponsible) {
+                                    alert('لطفا مسئول تست را انتخاب کنید');
+                                    return;
+                                }
+                                approveRequest(requestId, testResponsible);
+                            } else if (requestType === 'reject') {
+                                const rejectReason = formData.get('reject_reason');
+                                if (!rejectReason) {
+                                    alert('لطفا دلیل رد را وارد کنید');
+                                    return;
+                                }
+                                rejectRequest(requestId, rejectReason);
+                            }
+                        });
+                    });
                 }
             } catch (error) {
                 console.error('Error loading requests:', error);
@@ -509,48 +614,52 @@
         }
 
         // Approve request
-        async function approveRequest(requestId) {
-            const testResponsible = prompt('لطفا مسئول تست را وارد کنید:');
-            if (testResponsible) {
-                try {
-                    await fetch(`${API_BASE}/api/requests/${requestId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            status: 'approved',
-                            test_responsible: testResponsible
-                        })
-                    });
+        async function approveRequest(requestId, testResponsible) {
+            try {
+                const response = await fetch(`${API_BASE}/api/requests/${requestId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: 'approved',
+                        test_responsible: testResponsible
+                    })
+                });
+
+                if (response.ok) {
                     alert('درخواست تایید شد');
                     loadRequests();
-                } catch (error) {
+                } else {
                     alert('خطا در تایید درخواست');
                 }
+            } catch (error) {
+                alert('خطا در ارتباط با سرور');
             }
         }
 
         // Reject request
-        async function rejectRequest(requestId) {
-            const reason = prompt('لطفا دلیل رد درخواست را وارد کنید:');
-            if (reason) {
-                try {
-                    await fetch(`${API_BASE}/api/requests/${requestId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            status: 'rejected',
-                            reason: reason
-                        })
-                    });
+        async function rejectRequest(requestId, reason) {
+            try {
+                const response = await fetch(`${API_BASE}/api/requests/${requestId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: 'rejected',
+                        reason: reason
+                    })
+                });
+
+                if (response.ok) {
                     alert('درخواست رد شد');
                     loadRequests();
-                } catch (error) {
+                } else {
                     alert('خطا در رد درخواست');
                 }
+            } catch (error) {
+                alert('خطا در ارتباط با سرور');
             }
         }
 
